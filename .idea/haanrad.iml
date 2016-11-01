@@ -2,8 +2,22 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

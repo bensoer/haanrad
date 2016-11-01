@@ -8,5 +8,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(HAANRAD_FILES src/haanrad/main.cpp src/haanrad/TrafficAnalyzer.cpp src/haanrad/TrafficAnalyzer.h src/haanrad/ProcessDistorter.cpp src/haanrad/ProcessDistorter.h src/haanrad/NetworkMonitor.cpp src/haanrad/NetworkMonitor.h src/haanrad/CovertSocket.cpp src/haanrad/CovertSocket.h src/haanrad/SystemState.cpp src/haanrad/SystemState.h src/haanrad/Time.cpp src/haanrad/Time.h src/haanrad/NetworkMonitorThread.cpp src/haanrad/NetworkMonitorThread.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
-set(CLIENT_FILES src/client/main.cpp)
+set(CLIENT_FILES src/client/main.cpp src/client/CommHandler.cpp src/client/CommHandler.h src/client/MessageQueue.cpp src/client/MessageQueue.h src/client/Message.cpp src/client/Message.h)
 add_executable(client ${CLIENT_FILES})

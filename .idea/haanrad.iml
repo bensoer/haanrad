@@ -17,7 +17,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

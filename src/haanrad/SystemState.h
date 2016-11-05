@@ -24,6 +24,9 @@
 //How busy is the network ?
 class SystemState {
 
+private:
+
+
 
 };
 

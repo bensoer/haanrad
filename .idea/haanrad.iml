@@ -17,7 +17,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />

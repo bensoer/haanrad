@@ -26,6 +26,17 @@ class SystemState {
 
 private:
 
+    //these two can tell us how much ram we are using and how that compares to the average, if we are high or not.
+    //we want to stay always below average, so that we stay low on detection charts
+    int getPercentageOfRAMUsed();
+    double getAverageProcessRAMUsage();
+
+    //these can tell us how much CPU we are using and how that compares to the average
+    unsigned long long previousTotalCPUTime = 0;
+    unsigned long long previousHaanradCPUTime = 0;
+    int getPercentageOfCPUUsed();
+    double getAverageProcessCPUUsage();
+
 
 
 };

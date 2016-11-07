@@ -102,7 +102,7 @@ string * ProcessDistorter::findPopularProcessName() {
 
     Logger::debug("ProcessDistorter - Searching Through Folders. Collecting Tabs On Process Names");
     //now find all of the names
-    for_each(processDirs->begin(), processDirs->end(), [processes](string processDir){
+    for_each(processDirs->begin(), processDirs->end(), [this, processes](string processDir){
 
         ifstream reader;
         string fullPath = "/proc/" + processDir + "/comm";

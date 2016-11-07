@@ -7,6 +7,41 @@
 #include "ProcHelper.h"
 #include "Logger.h"
 
+vector<ProcDev *> * ProcHelper::getAllNetworkInterfaceStats() {
+
+    string fullPath = "/proc/net/dev";
+    int BUFFSIZE = 255;
+    char BUFFER[BUFFSIZE];
+    char *datastart;
+    vector<ProcDev *> * interfaceList = new vector<ProcDev *>();
+
+    FILE * file;
+    file = fopen(fullPath.c_str(), "-");
+    if(file != nullptr){
+
+        fgets(BUFFER,BUFFSIZE, file); //ignore the first line since its just header titles
+
+        while(fgets(BUFFER, BUFFSIZE, file)){
+
+            ProcDev * interface = new ProcDev();
+            sscanf(BUFFER, "%s       %llu  %d     %d  %d  %d  %d   %d        %d       %llu",
+            interface->interface, interface->receivedBytes, interface->receivedPackets, NULL, NULL, NULL, NULL,NULL,
+            interface->sentBytes, interface->sentPackets);
+
+            interfaceList->push_back(interface);
+        }
+
+        fclose(file);
+
+        return interfaceList;
+
+    }else{
+        return nullptr;
+    }
+
+}
+
+
 ProcStat * ProcHelper::parseProcessStatInformation(int pid) {
 
     FILE * file;

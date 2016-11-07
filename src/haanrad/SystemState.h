@@ -37,6 +37,12 @@ private:
     int getPercentageOfCPUUsed();
     double getAverageProcessCPUUsage();
 
+    //tell how busy the network is
+    unsigned long long previousByteCount = 0;
+    time_t previousCheckTime = 0;
+    unsigned long long getInboundBitRate();
+    unsigned long long getOutboundBitRate();
+    void resetNetworkCheckTime();
 
 
 };

@@ -8,6 +8,66 @@
 #include "../shared/ProcHelper.h"
 #include "../shared/Logger.h"
 
+void SystemState::resetNetworkCheckTime() {
+    this->previousCheckTime = time(nullptr);
+}
+
+unsigned long long SystemState::getOutboundBitRate() {
+
+    ProcHelper * helper = new ProcHelper();
+    vector<ProcDev *> * interfaceList = helper->getAllNetworkInterfaceStats();
+
+    unsigned long long totalOutboundBits;
+    for_each(interfaceList->begin(), interfaceList->end(), [&totalOutboundBits](ProcDev * interface){
+        totalOutboundBits += (interface->sentBytes * 8);
+
+        //cleanup now
+        delete(interface);
+        interface = nullptr;
+    });
+
+    time_t now = time(nullptr);
+
+    time_t difference = now - this->previousCheckTime;
+    unsigned long long bitRate = totalOutboundBits / difference;
+
+    interfaceList->clear();
+    delete(interfaceList);
+    interfaceList = nullptr;
+    delete(helper);
+    helper = nullptr;
+
+    return bitRate;
+}
+
+unsigned long long SystemState::getInboundBitRate() {
+
+    ProcHelper * helper = new ProcHelper();
+    vector<ProcDev *> * interfaceList = helper->getAllNetworkInterfaceStats();
+
+    unsigned long long totalOutboundBits;
+    for_each(interfaceList->begin(), interfaceList->end(), [&totalOutboundBits](ProcDev * interface){
+        totalOutboundBits += (interface->receivedBytes * 8);
+
+        //cleanup now
+        delete(interface);
+        interface = nullptr;
+    });
+
+    time_t now = time(nullptr);
+
+    time_t difference = now - this->previousCheckTime;
+    unsigned long long bitRate = totalOutboundBits / difference;
+
+    interfaceList->clear();
+    delete(interfaceList);
+    interfaceList = nullptr;
+    delete(helper);
+    helper = nullptr;
+
+    return bitRate;
+}
+
 double SystemState::getAverageProcessCPUUsage() {
 
     Logger::debug("SystemStats - Calculating Average RAM Usage Per Process");

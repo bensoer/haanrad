@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "ProcStat.h"
+#include "ProcDev.h"
 
 class ProcHelper {
 
@@ -16,6 +17,8 @@ public:
     ProcStat * parseProcessStatInformation(int pid);
 
     vector<int> * getAllProcessIDs();
+
+    vector<ProcDev *> * getAllNetworkInterfaceStats();
 };
 
 

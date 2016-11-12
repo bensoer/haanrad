@@ -16,8 +16,22 @@
 
 //NetworkMonitor also is in charge of ensuring a complete message is received and authenticated from the client as messages
 //may arrive out of order, encrypted, and not all in one packet - maybe not even the same kind of packet ?
+
 class NetworkMonitor {
 
+private:
+    int rawTCPSocket = -1;
+    int rawUDPSocket = -1;
+
+    int epollDescriptor = -1;
+
+    const int EPOLL_QUEUE_LENGTH = 10;
+
+public:
+
+    NetworkMonitor();
+
+    string * listenForTraffic();
 };
 
 

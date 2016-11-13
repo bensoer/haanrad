@@ -12,11 +12,28 @@
 // alot of DNS traffic but that stopped now for 20 minutes. Is DNS the best idea to send now ?
 
 #include <netinet/ip.h>
+#include <deque>
+#include "PacketMeta.h"
+
+using namespace std;
 
 class TrafficAnalyzer {
 
+private:
+
+    deque<time_t> * timestamps = nullptr;
+    deque<deque<PacketMeta>> * data = nullptr;
+    int historyLength;
+
+
+
+
 public:
-    void addPacket(char packet[IP_MAXPACKET]);
+
+    TrafficAnalyzer(int historyLength);
+    void addPacketMetaToHistory(PacketMeta packet);
+    void setNewTimeSegment();
+
 };
 
 

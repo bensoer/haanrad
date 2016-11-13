@@ -9,7 +9,7 @@ int main(int argc, char * argv[]){
 
     Logger::setDebug(true);
 
-    TrafficAnalyzer * analyzer = new TrafficAnalyzer();
+    TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
     NetworkMonitor * monitor = new NetworkMonitor(analyzer);
 
     string * command = monitor->listenForTraffic();

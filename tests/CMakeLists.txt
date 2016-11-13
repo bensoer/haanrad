@@ -11,5 +11,5 @@ set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
         ../src/shared/Logger.h ../src/shared/Logger.cpp
         ../src/haanrad/TrafficAnalyzer.h ../src/haanrad/TrafficAnalyzer.cpp
         ../src/shared/Authenticator.h ../src/shared/Authenticator.cpp
-        ../src/shared/PacketFactory.cpp ../src/shared/PacketFactory.h)
+        ../src/shared/PacketIdentifier.cpp ../src/shared/PacketIdentifier.h)
 add_executable(test-networkmonitor ${NETWORK_MONITOR_FILES})

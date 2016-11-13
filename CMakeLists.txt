@@ -20,7 +20,7 @@ set(HAANRAD_FILES
         src/shared/Authenticator.cpp src/shared/Authenticator.h
         src/haanrad/PacketMeta.cpp src/haanrad/PacketMeta.h
         src/shared/Structures.h
-        src/shared/PacketFactory.cpp src/shared/PacketFactory.h)
+        src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
 set(CLIENT_FILES src/client/main.cpp src/client/CommHandler.cpp src/client/CommHandler.h src/client/MessageQueue.cpp src/client/MessageQueue.h src/client/Message.cpp src/client/Message.h src/shared/Logger.cpp src/shared/Logger.h src/shared/ProcHelper.cpp src/shared/ProcHelper.h src/shared/ProcStat.cpp src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h src/shared/Crypto.cpp src/shared/Crypto.h)

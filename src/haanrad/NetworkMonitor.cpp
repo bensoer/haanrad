@@ -11,7 +11,7 @@
 #include "NetworkMonitor.h"
 #include "../shared/Logger.h"
 #include "../shared/Authenticator.h"
-#include "../shared/PacketFactory.h"
+#include "../shared/PacketIdentifier.h"
 #include <sys/epoll.h>
 
 
@@ -122,7 +122,7 @@ string * NetworkMonitor::listenForTraffic() {
 
         }else{
             //if it is not our packet give it to the TrafficAnalyzer
-            this->trafficAnalyzer->addPacketMetaToHistory(PacketFactory::generatePacketMeta(BUFFER));
+            this->trafficAnalyzer->addPacketMetaToHistory(PacketIdentifier::generatePacketMeta(BUFFER));
 
         }
     }

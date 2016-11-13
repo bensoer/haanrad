@@ -5,7 +5,7 @@
 
 #include "TrafficAnalyzer.h"
 
-#include "../shared/PacketFactory.h"
+#include "../shared/PacketIdentifier.h"
 #include <ctime>
 
 TrafficAnalyzer::TrafficAnalyzer(int historyLength) {

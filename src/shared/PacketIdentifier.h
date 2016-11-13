@@ -9,7 +9,7 @@
 #include <netinet/ip.h>
 #include "../haanrad/PacketMeta.h"
 
-class PacketFactory {
+class PacketIdentifier{
 public:
     static bool isDNS(char * applicationLayer);
     static bool isHTTP(char * applicationLayer);

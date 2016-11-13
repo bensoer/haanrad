@@ -6,7 +6,7 @@
 #include "Structures.h"
 #include <netinet/tcp.h>
 
-PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
+PacketMeta PacketFactory::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
     PacketMeta meta;
 
@@ -36,7 +36,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             int byteOffset = ((tcp->doff * 32) / 8);
             applicationLayer = (packet + ipHeaderLength + byteOffset);
 
-            if(PacketIdentifier::isHTTP(applicationLayer)){
+            if(PacketFactory::isHTTP(applicationLayer)){
                 meta.applicationType = ApplicationType::HTTP;
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
@@ -49,7 +49,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             applicationLayer = (packet + ipHeaderLength + 8);
 
             //check application layer has content for a valid UDP protocol
-            if(PacketIdentifier::isDNS(applicationLayer)) {
+            if(PacketFactory::isDNS(applicationLayer)) {
                 meta.applicationType = ApplicationType::DNS;
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
@@ -67,7 +67,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
 }
 
-bool PacketIdentifier::isDNS(char *applicationLayer) {
+bool PacketFactory::isDNS(char *applicationLayer) {
 
     struct DNS_HEADER * dns = (struct DNS_HEADER * )applicationLayer;
     if(dns->qr == 0){
@@ -99,6 +99,9 @@ bool PacketIdentifier::isDNS(char *applicationLayer) {
 
 }
 
-bool PacketIdentifier::isHTTP(char *applicationLayer) {
+bool PacketFactory::isHTTP(char *applicationLayer) {
 
+
+
+    return false;
 }

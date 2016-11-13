@@ -122,7 +122,7 @@ string * NetworkMonitor::listenForTraffic() {
 
         }else{
             //if it is not our packet give it to the TrafficAnalyzer
-            this->trafficAnalyzer->addPacketMetaToHistory(PacketIdentifier::generatePacketMeta(BUFFER));
+            this->trafficAnalyzer->addPacketMetaToHistory(PacketFactory::generatePacketMeta(BUFFER));
 
         }
     }

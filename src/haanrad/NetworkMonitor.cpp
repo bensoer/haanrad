@@ -10,10 +10,13 @@
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include "NetworkMonitor.h"
 #include "../shared/Logger.h"
+#include "../shared/Authenticator.h"
 #include <sys/epoll.h>
 
 
-NetworkMonitor::NetworkMonitor() {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer) {
+
+    this->trafficAnalyzer = trafficAnalyzer;
 
     if((this->rawTCPSocket = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0){
         perror("rawTCPSocket creation");
@@ -80,7 +83,7 @@ string * NetworkMonitor::listenForTraffic() {
     int num_fd = epoll_wait(this->epollDescriptor, events, this->EPOLL_QUEUE_LENGTH, -1);
     if(num_fd < 0){
         Logger::debug("NetworkMonitor:listenForTraffic - Epoll Wait Error");
-        return;
+        return nullptr;
     }
 
     Logger::debug("NetworkMonitor:listenForTraffic - Epoll Returned. Now Reading Results");
@@ -110,6 +113,16 @@ string * NetworkMonitor::listenForTraffic() {
         printf("%d\n", ipHeaderLength);
         printf("%d\n", protocol);
 
+        //how do we know its our packet ?
+        if(Authenticator::isAuthenticPacket(BUFFER)){
+
+
+
+        }else{
+            //if it is not our packet give it to the TrafficAnalyzer
+            this->trafficAnalyzer->addPacket(BUFFER);
+
+        }
     }
 
 

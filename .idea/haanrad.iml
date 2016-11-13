@@ -5,21 +5,6 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/test-processdistorter/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/test-networkmonitor/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />
@@ -35,6 +20,25 @@
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Crypto.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Crypto.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

@@ -17,6 +17,11 @@
 //NetworkMonitor also is in charge of ensuring a complete message is received and authenticated from the client as messages
 //may arrive out of order, encrypted, and not all in one packet - maybe not even the same kind of packet ?
 
+#include "TrafficAnalyzer.h"
+#include <iostream>
+
+using namespace std;
+
 class NetworkMonitor {
 
 private:
@@ -27,9 +32,11 @@ private:
 
     const int EPOLL_QUEUE_LENGTH = 10;
 
+    TrafficAnalyzer * trafficAnalyzer = nullptr;
+
 public:
 
-    NetworkMonitor();
+    NetworkMonitor(TrafficAnalyzer * analyzer);
 
     string * listenForTraffic();
 };

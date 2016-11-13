@@ -8,5 +8,7 @@ add_executable(test-processdistorter ${PROC_DISTORT_FILES})
 
 set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
         ../src/haanrad/NetworkMonitor.h ../src/haanrad/NetworkMonitor.cpp
-        ../src/shared/Logger.h ../src/shared/Logger.cpp)
+        ../src/shared/Logger.h ../src/shared/Logger.cpp
+        ../src/haanrad/TrafficAnalyzer.h ../src/haanrad/TrafficAnalyzer.cpp
+        ../src/shared/Authenticator.h ../src/shared/Authenticator.cpp)
 add_executable(test-networkmonitor ${NETWORK_MONITOR_FILES})

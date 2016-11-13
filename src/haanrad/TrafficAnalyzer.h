@@ -26,8 +26,6 @@ private:
     int historyLength;
 
 
-
-
 public:
 
     TrafficAnalyzer(int historyLength);

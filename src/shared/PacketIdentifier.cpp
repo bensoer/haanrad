@@ -6,6 +6,10 @@
 #include "Structures.h"
 #include <netinet/tcp.h>
 
+char* PacketIdentifier::findApplicationLayer(char packet[IP_MAXPACKET]) {
+
+}
+
 PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
     PacketMeta meta;

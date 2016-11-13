@@ -15,6 +15,7 @@ public:
     static bool isHTTP(char * applicationLayer);
 
     static PacketMeta generatePacketMeta(char packet[IP_MAXPACKET]);
+    static char * findApplicationLayer(char packet[IP_MAXPACKET]);
 };
 
 

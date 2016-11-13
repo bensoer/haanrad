@@ -18,6 +18,9 @@ struct NetworkType{
 };
 
 
+//packet meta needs to store a raw copy of its packet and pointer to where to store data in a response ?
+//this way when picking the correct packet we can also mimmick the common traffic as if we belong
+
 class PacketMeta {
 
 public:

@@ -115,6 +115,8 @@ string * NetworkMonitor::listenForTraffic() {
         printf("%d\n", protocol);
 
         //how do we know its our packet ?
+        //using packet identifier need to determine where our payload information is
+        //then need to determine how to authenticate it
         if(Authenticator::isAuthenticPacket(BUFFER)){
 
 

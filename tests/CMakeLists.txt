@@ -13,3 +13,11 @@ set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
         ../src/shared/Authenticator.h ../src/shared/Authenticator.cpp
         ../src/shared/PacketIdentifier.cpp ../src/shared/PacketIdentifier.h)
 add_executable(test-networkmonitor ${NETWORK_MONITOR_FILES})
+
+set(CRYPTO_FILES
+        test-crypto/main.cpp
+        ../src/shared/Crypto.h ../src/shared/Crypto.cpp
+        ../src/shared/PacketIdentifier.h ../src/shared/PacketIdentifier.cpp
+        ../src/haanrad/PacketMeta.h ../src/haanrad/PacketMeta.cpp
+        ../src/shared/Logger.h ../src/shared/Logger.cpp)
+add_executable(test-crypto ${CRYPTO_FILES})

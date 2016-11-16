@@ -21,6 +21,38 @@ void Logger::debug(string message) {
     }
 }
 
+void Logger::debugl(unsigned char *message) {
+    if(Logger::isDebug){
+        cout << message;
+    }
+}
+
+void Logger::debugr(unsigned char *message, int length) {
+    if(Logger::isDebug){
+        printf(">");
+        for(int i = 0; i < length; i++){
+            printf("%c", message[i]);
+        }
+        printf("<\n");
+        for(int i = 0; i < length; i++){
+            printf("%d:%c(%d) | ", i,message[i], message[i]);
+        }
+        printf("\n");
+    }
+}
+
+void Logger::debug(unsigned char *message) {
+    if(Logger::isDebug){
+        cout << message << endl;
+    }
+}
+
+void Logger::debugl(string message) {
+    if(Logger::isDebug){
+        Logger::print(message);
+    }
+}
+
 /**
  * println is a helper method that prints the passed in message to stdout and appends a return character at the end
  * @param message String - the message to be printed

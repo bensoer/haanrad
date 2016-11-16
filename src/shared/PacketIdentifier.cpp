@@ -4,15 +4,35 @@
 
 #include "PacketIdentifier.h"
 #include "Structures.h"
+#include "Logger.h"
 #include <netinet/tcp.h>
+#include <cstring>
 
-char* PacketIdentifier::findApplicationLayer(char packet[IP_MAXPACKET]) {
+char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
+
+    struct iphdr * ip = (struct iphdr *)meta->packet;
+    char * applicationLayer = nullptr;
+    int ipHeaderLength = (ip->ihl * 4);
+
+    if(meta->transportType == TransportType::TCP){
+        struct tcphdr * tcp = (struct tcphdr *)(meta->packet + ipHeaderLength);
+        int byteOffset = ((tcp->doff * 32) / 8);
+        applicationLayer = (meta->packet + ipHeaderLength + byteOffset);
+    }else if(meta->transportType == TransportType::UDP){
+        applicationLayer = (meta->packet + ipHeaderLength + 8);
+    }else{
+        Logger::debug("PacketIdentifier:findApplicationLayer - Unable To Determine Protocol. Could Not Fetch Application Layer");
+    }
+
+    return applicationLayer;
+
 
 }
 
 PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
     PacketMeta meta;
+    memcpy(meta.packet, &packet, IP_MAXPACKET);
 
     struct iphdr * ip = (struct iphdr *)packet;
     char * applicationLayer = nullptr;
@@ -55,6 +75,8 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             //check application layer has content for a valid UDP protocol
             if(PacketIdentifier::isDNS(applicationLayer)) {
                 meta.applicationType = ApplicationType::DNS;
+            }else if(PacketIdentifier::isTLS(applicationLayer)){
+                meta.applicationType = ApplicationType::TLS;
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
             }
@@ -108,4 +130,16 @@ bool PacketIdentifier::isHTTP(char *applicationLayer) {
 
 
     return false;
+}
+
+bool PacketIdentifier::isTLS(char *applicationLayer) {
+
+    struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+
+    if(tls->contentType == 23 && tls->type == 771 && tls->length > 0){
+        return true;
+    }
+
+
+
 }

@@ -28,4 +28,13 @@ struct DNS_HEADER
     unsigned short add_count; // number of resource entries
 };
 
+struct TLS_HEADER
+{
+
+    unsigned char contentType;
+    unsigned short type;
+    unsigned short length;
+
+};
+
 #endif //HAANRAD_STRUCTURES_H

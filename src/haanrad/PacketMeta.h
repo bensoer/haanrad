@@ -5,8 +5,10 @@
 #ifndef HAANRAD_PACKETMETA_H
 #define HAANRAD_PACKETMETA_H
 
+#include <netinet/ip.h>
+
 struct ApplicationType{
-    enum ApplicationTypeEnum { HTTP, DNS, UNKNOWN = -1};
+    enum ApplicationTypeEnum { HTTP, DNS, TLS, UNKNOWN = -1};
 };
 
 struct TransportType{
@@ -27,6 +29,7 @@ public:
     NetworkType::NetworkTypeEnum ipType;
     TransportType::TransportTypeEnum transportType;
     ApplicationType::ApplicationTypeEnum applicationType;
+    char packet[IP_MAXPACKET];
 };
 
 

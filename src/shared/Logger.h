@@ -24,6 +24,13 @@ public:
 
     static void error(string message);
     static void debug(string message);
+
+    static void debugl(string message);
+    static void debugl(unsigned char * message);
+    static void debug(unsigned char * message);
+
+    static void debugr(unsigned char * message, int length);
+
 };
 
 

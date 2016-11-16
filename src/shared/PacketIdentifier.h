@@ -13,9 +13,10 @@ class PacketIdentifier{
 public:
     static bool isDNS(char * applicationLayer);
     static bool isHTTP(char * applicationLayer);
+    static bool isTLS(char * applicationLayer);
 
     static PacketMeta generatePacketMeta(char packet[IP_MAXPACKET]);
-    static char * findApplicationLayer(char packet[IP_MAXPACKET]);
+    static char * findApplicationLayer(PacketMeta * meta);
 };
 
 

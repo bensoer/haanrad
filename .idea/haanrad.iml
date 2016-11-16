@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/tests/test-processdistorter/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/test-networkmonitor/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/test-crypto/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />

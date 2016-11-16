@@ -12,6 +12,7 @@
 #include "../shared/Logger.h"
 #include "../shared/Authenticator.h"
 #include "../shared/PacketIdentifier.h"
+#include "../shared/Crypto.h"
 #include <sys/epoll.h>
 
 
@@ -117,6 +118,11 @@ string * NetworkMonitor::listenForTraffic() {
         //how do we know its our packet ?
         //using packet identifier need to determine where our payload information is
         //then need to determine how to authenticate it
+
+        PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER);
+        char *applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
+        //Crypto::decryptPacket(meta, applicationLayer);
+
         if(Authenticator::isAuthenticPacket(BUFFER)){
 
 
@@ -124,7 +130,7 @@ string * NetworkMonitor::listenForTraffic() {
 
         }else{
             //if it is not our packet give it to the TrafficAnalyzer
-            this->trafficAnalyzer->addPacketMetaToHistory(PacketIdentifier::generatePacketMeta(BUFFER));
+            this->trafficAnalyzer->addPacketMetaToHistory(meta);
 
         }
     }

@@ -16,8 +16,9 @@
 #include <sys/epoll.h>
 
 
-NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer) {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, Crypto * crypto) {
 
+    this->crypto = crypto;
     this->trafficAnalyzer = trafficAnalyzer;
 
     if((this->rawTCPSocket = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0){
@@ -121,7 +122,14 @@ string * NetworkMonitor::listenForTraffic() {
 
         PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER);
         char *applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
-        //Crypto::decryptPacket(meta, applicationLayer);
+
+        if(applicationLayer == nullptr){
+            Logger::debug("NetworkMonitor:listenForTraffic - Could No Find Application Layer. Can't Do Anything With Packet");
+            continue;
+        }else{
+            this->crypto->decryptPacket(&meta, applicationLayer);
+        }
+
 
         if(Authenticator::isAuthenticPacket(BUFFER)){
 

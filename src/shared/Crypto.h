@@ -15,6 +15,7 @@ class Crypto {
 private:
     std::string plainKey;
     unsigned char cypherkey[SHA256_DIGEST_LENGTH];
+    int cryptBufferSize = 1024;
 
 public:
 
@@ -23,6 +24,8 @@ public:
 
     void decryptPacket(PacketMeta * meta, char * applicationLayer);
     void encryptPacket(PacketMeta * meta, char * applicationLayer);
+
+    void setCryptBufferSize(int buffersize);
 };
 
 

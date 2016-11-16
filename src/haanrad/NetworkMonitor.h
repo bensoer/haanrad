@@ -18,6 +18,7 @@
 //may arrive out of order, encrypted, and not all in one packet - maybe not even the same kind of packet ?
 
 #include "TrafficAnalyzer.h"
+#include "../shared/Crypto.h"
 #include <iostream>
 
 using namespace std;
@@ -33,10 +34,11 @@ private:
     const int EPOLL_QUEUE_LENGTH = 10;
 
     TrafficAnalyzer * trafficAnalyzer = nullptr;
+    Crypto * crypto = nullptr;
 
 public:
 
-    NetworkMonitor(TrafficAnalyzer * analyzer);
+    NetworkMonitor(TrafficAnalyzer * analyzer, Crypto * crypto);
 
     string * listenForTraffic();
 };

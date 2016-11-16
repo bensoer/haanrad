@@ -84,8 +84,8 @@ void Crypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         Logger::debugl(encryptedPayload);
         Logger::debug("<");
 
-        unsigned char plaintext[1024];
-        memset(plaintext, 0, 1024);
+        unsigned char plaintext[this->cryptBufferSize];
+        memset(plaintext, 0, this->cryptBufferSize);
         int len;
         int plaintextLength;
 
@@ -144,8 +144,8 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
 
         //Logger::debug("Crypto:encryptPacket - The IV Is Initialized To: >" + string((char *)iv) + "<");
 
-        unsigned char ciphertext[1024];
-        memset(ciphertext, 0, 1024);
+        unsigned char ciphertext[this->cryptBufferSize];
+        memset(ciphertext, 0, this->cryptBufferSize);
 
         int len;
         int ciphertext_len = 0;

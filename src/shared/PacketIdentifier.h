@@ -17,6 +17,8 @@ public:
 
     static PacketMeta generatePacketMeta(char packet[IP_MAXPACKET]);
     static char * findApplicationLayer(PacketMeta * meta);
+    static char * findTransportLayer(PacketMeta * meta);
+
 };
 
 

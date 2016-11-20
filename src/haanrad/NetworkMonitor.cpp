@@ -63,7 +63,11 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
     }
 
     Logger::debug("NetworkMonitor:listenForTraffic - Decryption Complete. Now Authenticating");
-    if(Authenticator::isAuthenticPacket(BUFFER)){
+    if(Authenticator::isAuthenticPacket(&meta)){
+
+        //packet has been successfully authenticated. Now to parse out what we need of the message
+
+
 
 
     }else{

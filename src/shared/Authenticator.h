@@ -6,6 +6,7 @@
 #define HAANRAD_AUTHENTICATOR_H
 
 #include <string>
+#include "../haanrad/PacketMeta.h"
 
 using namespace std;
 
@@ -15,9 +16,9 @@ private:
     static string password;
 
 public:
-    static bool isAuthenticPacket(char * packet);
+    static bool isAuthenticPacket(PacketMeta * meta);
 
-    static void addAuthSignature(char * packet);
+    static bool addAuthSignature(PacketMeta * meta);
 
     static void setPassword(string password);
 };

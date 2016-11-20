@@ -10,16 +10,15 @@
 
 char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 
-    struct iphdr * ip = (struct iphdr *)meta->packet;
     char * applicationLayer = nullptr;
-    int ipHeaderLength = (ip->ihl * 4);
+    char * transportLayer = PacketIdentifier::findTransportLayer(meta);
 
     if(meta->transportType == TransportType::TCP){
-        struct tcphdr * tcp = (struct tcphdr *)(meta->packet + ipHeaderLength);
+        struct tcphdr * tcp = (struct tcphdr *)(transportLayer);
         int byteOffset = ((tcp->doff * 32) / 8);
-        applicationLayer = (meta->packet + ipHeaderLength + byteOffset);
+        applicationLayer = (transportLayer + byteOffset);
     }else if(meta->transportType == TransportType::UDP){
-        applicationLayer = (meta->packet + ipHeaderLength + 8);
+        applicationLayer = (transportLayer + 8);
     }else{
         Logger::debug("PacketIdentifier:findApplicationLayer - Unable To Determine Protocol. Could Not Fetch Application Layer");
     }
@@ -27,6 +26,17 @@ char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
     return applicationLayer;
 
 
+}
+
+char* PacketIdentifier::findTransportLayer(PacketMeta *meta) {
+
+    struct iphdr * ip = (struct iphdr *)meta->packet;
+    char * transportLayer = nullptr;
+    int ipHeaderLength = (ip->ihl * 4);
+
+    transportLayer = (meta->packet + ipHeaderLength);
+
+    return transportLayer;
 }
 
 PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {

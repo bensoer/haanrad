@@ -13,21 +13,21 @@
       <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/HCrypto.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/HCrypto.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/PacketIdentifier.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Structures.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/Crypto.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/PacketIdentifier.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/shared/Crypto.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />

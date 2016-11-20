@@ -10,7 +10,7 @@
 #include <string>
 #include <openssl/sha.h>
 
-class Crypto {
+class HCrypto {
 
 private:
     std::string plainKey;
@@ -19,11 +19,11 @@ private:
 
 public:
 
-    Crypto(std::string key);
-    ~Crypto();
+    HCrypto(std::string key);
+    ~HCrypto();
 
-    void decryptPacket(PacketMeta * meta, char * applicationLayer);
-    void encryptPacket(PacketMeta * meta, char * applicationLayer);
+    bool decryptPacket(PacketMeta * meta, char * applicationLayer);
+    bool encryptPacket(PacketMeta * meta, char * applicationLayer);
 
     void setCryptBufferSize(int buffersize);
 };

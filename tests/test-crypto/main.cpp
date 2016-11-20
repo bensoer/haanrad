@@ -4,7 +4,7 @@
 
 #include <cstring>
 #include <iostream>
-#include "../../src/shared/Crypto.h"
+#include "../../src/shared/HCrypto.h"
 #include "../../src/shared/PacketIdentifier.h"
 #include "../../src/shared/Structures.h"
 #include "../../src/shared/Logger.h"
@@ -38,7 +38,7 @@ int main(int argc, char * argv[]){
     memcpy(ptr, message, sizeof(message));
 
     Logger::debug("Creating Crypto Handler");
-    Crypto * crypto = new Crypto("password");
+    HCrypto * crypto = new HCrypto("password");
     Logger::debug("Now Encrypting");
     crypto->encryptPacket(meta, applicationLayer);
     Logger::debug("Now Decrypting");

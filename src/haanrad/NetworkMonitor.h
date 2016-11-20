@@ -18,8 +18,9 @@
 //may arrive out of order, encrypted, and not all in one packet - maybe not even the same kind of packet ?
 
 #include "TrafficAnalyzer.h"
-#include "../shared/Crypto.h"
+#include "../shared/HCrypto.h"
 #include <iostream>
+#include <pcap.h>
 
 using namespace std;
 
@@ -33,14 +34,33 @@ private:
 
     const int EPOLL_QUEUE_LENGTH = 10;
 
+
     TrafficAnalyzer * trafficAnalyzer = nullptr;
-    Crypto * crypto = nullptr;
+    HCrypto * crypto = nullptr;
+
+    pcap_t * currentFD;
+
+    bool getInterface();
+
+    string * command = nullptr;
+
+    pcap_if_t * allInterfaces = nullptr;
+    pcap_if_t * listeningInterface = nullptr;
+
+    static NetworkMonitor * instance;
+    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto);
+
+    static void packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet);
 
 public:
 
-    NetworkMonitor(TrafficAnalyzer * analyzer, Crypto * crypto);
+
+
+    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto);
 
     string * listenForTraffic();
+
+    void killListening();
 };
 
 

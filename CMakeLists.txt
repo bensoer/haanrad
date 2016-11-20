@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(haanrad)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lcrypto")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lcrypto -lpcap")
 # set the bin folder location
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
@@ -20,10 +20,11 @@ set(HAANRAD_FILES
         src/shared/Authenticator.cpp src/shared/Authenticator.h
         src/haanrad/PacketMeta.cpp src/haanrad/PacketMeta.h
         src/shared/Structures.h
-        src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h)
+        src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
+        src/shared/HCrypto.cpp src/shared/HCrypto.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
-set(CLIENT_FILES src/client/main.cpp src/client/CommHandler.cpp src/client/CommHandler.h src/client/MessageQueue.cpp src/client/MessageQueue.h src/client/Message.cpp src/client/Message.h src/shared/Logger.cpp src/shared/Logger.h src/shared/ProcHelper.cpp src/shared/ProcHelper.h src/shared/ProcStat.cpp src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h src/shared/Crypto.cpp src/shared/Crypto.h)
+set(CLIENT_FILES src/client/main.cpp src/client/CommHandler.cpp src/client/CommHandler.h src/client/MessageQueue.cpp src/client/MessageQueue.h src/client/Message.cpp src/client/Message.h src/shared/Logger.cpp src/shared/Logger.h src/shared/ProcHelper.cpp src/shared/ProcHelper.h src/shared/ProcStat.cpp src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h src/shared/HCrypto.cpp src/shared/HCrypto.h)
 add_executable(client ${CLIENT_FILES})
 
 

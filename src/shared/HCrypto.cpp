@@ -2,7 +2,7 @@
 // Created by bensoer on 12/11/16.
 //
 
-#include "Crypto.h"
+#include "HCrypto.h"
 
 #include <openssl/conf.h>
 #include <openssl/evp.h>
@@ -15,16 +15,16 @@
 #include "Structures.h"
 #include "Logger.h"
 
-Crypto::~Crypto() {
+HCrypto::~HCrypto() {
     EVP_cleanup();
     ERR_free_strings();
 }
 
-Crypto::Crypto(std::string key) {
-    Logger::debug("Crypto - Setting Key");
+HCrypto::HCrypto(std::string key) {
+    Logger::debug("HCrypto - Setting Key");
     this->plainKey = key;
 
-    Logger::debug("Crypto - Generating Hash");
+    Logger::debug("HCrypto - Generating Hash");
     //take the key and generate a sha256 key from it
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
@@ -32,11 +32,11 @@ Crypto::Crypto(std::string key) {
     SHA256_Update(&sha256, key.c_str(), key.length());
     SHA256_Final(hash, &sha256);
 
-    Logger::debug("Crypto - Copying Hash From Password To Cypher");
+    Logger::debug("HCrypto - Copying Hash From Password To Cypher");
     memcpy(this->cypherkey, hash, SHA256_DIGEST_LENGTH);
     this->cypherkey[SHA256_DIGEST_LENGTH] = '\0';
 
-    Logger::debug("Crypto - Loading All Configurations For OpenSSL");
+    Logger::debug("HCrypto - Loading All Configurations For OpenSSL");
     ERR_load_crypto_strings();
     OpenSSL_add_all_algorithms();
     OPENSSL_config(NULL);
@@ -46,23 +46,23 @@ Crypto::Crypto(std::string key) {
 
 //we need patterns now to know what to decrypt and how to decrypt it
 
-void Crypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
+bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
     //if its a TLS packet use AES
     if(meta->applicationType == ApplicationType::TLS){
-        Logger::debug("Crypto:decryptPacket - Packet is A TLS Packet");
+        Logger::debug("HCrypto:decryptPacket - Packet is A TLS Packet");
 
         struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
         char * payload = applicationLayer + sizeof(struct TLS_HEADER);
 
-        Logger::debugl("Crypto:decryptPacket - Encrypted Payload Is: >");
+        Logger::debugl("HCrypto:decryptPacket - Encrypted Payload Is: >");
         Logger::debugl(payload);
         Logger::debug("<");
 
         EVP_CIPHER_CTX * ctx;
         if(!(ctx = EVP_CIPHER_CTX_new())){
-            Logger::debug("Crypto:decryptPacket - There Was An Error Creating The Context");
-            return;
+            Logger::debug("HCrypto:decryptPacket - There Was An Error Creating The Context");
+            return false;
         }
 
         //grab first 128 bits of the message contianing the iv
@@ -71,16 +71,16 @@ void Crypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         memcpy(&iv, payload, 16);
         iv[17] = '\0';
 
-        Logger::debugl("Crypto:decryptPacket - vector: >");
+        Logger::debugl("HCrypto:decryptPacket - vector: >");
         Logger::debugl(iv);
         Logger::debug("<");
 
 
-        Logger::debug("Crypto:encryptPacket - Length Is: " + to_string(tls->length));
+        Logger::debug("HCrypto:encryptPacket - Length Is: " + to_string(tls->length));
         payload += 16;
         memcpy(&encryptedPayload, payload, (tls->length - 16));
 
-        Logger::debugl("Crypto:decryptPacket - Encrypted Payload >");
+        Logger::debugl("HCrypto:decryptPacket - Encrypted Payload >");
         Logger::debugl(encryptedPayload);
         Logger::debug("<");
 
@@ -90,17 +90,20 @@ void Crypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         int plaintextLength;
 
         if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
-            Logger::debug("Crypto:decryptPacket - There Was An Error Initializing the Decryption");
+            Logger::debug("HCrypto:decryptPacket - There Was An Error Initializing the Decryption");
+            return false;
         }
 
         if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, encryptedPayload, (tls->length - 16))){
-            Logger::debug("Crypto:decryptPacket - There Was An Error Decrypting The Payload");
+            Logger::debug("HCrypto:decryptPacket - There Was An Error Decrypting The Payload");
+            return false;
         }
 
         plaintextLength = len;
 
         if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)){
-            Logger::debug("Crypto:decryptPacket - There Was An Error Finalizing Decryption of The Payload");
+            Logger::debug("HCrypto:decryptPacket - There Was An Error Finalizing Decryption of The Payload");
+            return false;
         }
 
         plaintextLength += len;
@@ -113,23 +116,25 @@ void Crypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         /* Clean up */
         EVP_CIPHER_CTX_free(ctx);
 
-
-
-        return;
+        return true;
     }
 
 
 }
 
-void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
+void HCrypto::setCryptBufferSize(int buffersize) {
+    this->cryptBufferSize = buffersize;
+}
+
+bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
 
     if(meta->applicationType == ApplicationType::TLS){
-        Logger::debug("Crypto:encryptPacket - Packet is A TLS Packet");
+        Logger::debug("HCrypto:encryptPacket - Packet is A TLS Packet");
 
         struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
         char * payload = applicationLayer + sizeof(struct TLS_HEADER);
 
-        Logger::debug("Crypto:encryptPacket - Payload Being Encrypted Is: >" + string(payload) + "<");
+        Logger::debug("HCrypto:encryptPacket - Payload Being Encrypted Is: >" + string(payload) + "<");
         //cout << ">" << payload << "< " << endl;
 
         EVP_CIPHER_CTX *ctx;
@@ -138,11 +143,11 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
         RAND_bytes(iv, 16);
         iv[16] = '\0';
 
-        Logger::debugl("Crypto: vector: >");
+        Logger::debugl("HCrypto: vector: >");
         Logger::debugr(iv, 17);
         Logger::debug("<");
 
-        //Logger::debug("Crypto:encryptPacket - The IV Is Initialized To: >" + string((char *)iv) + "<");
+        //Logger::debug("HCrypto:encryptPacket - The IV Is Initialized To: >" + string((char *)iv) + "<");
 
         unsigned char ciphertext[this->cryptBufferSize];
         memset(ciphertext, 0, this->cryptBufferSize);
@@ -152,10 +157,10 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
 
         /* Create and initialise the context */
         if(!(ctx = EVP_CIPHER_CTX_new())){
-            Logger::debug("Crypto:encryptPacket - There was an error encrypting the Payload");
-            return;
+            Logger::debug("HCrypto:encryptPacket - There was an error encrypting the Payload");
+            return false;
         }else{
-            Logger::debug("Crypto:encryptPacket - Successfully Initialized Context");
+            Logger::debug("HCrypto:encryptPacket - Successfully Initialized Context");
         }
 
         /* Initialise the encryption operation. IMPORTANT - ensure you use a key
@@ -164,20 +169,20 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
          * IV size for *most* modes is the same as the block size. For AES this
          * is 128 bits */
         if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
-            Logger::debug("Crypto:encryptPacket - There Was An Error Initializing The Encryption Procedure");
-            return;
+            Logger::debug("HCrypto:encryptPacket - There Was An Error Initializing The Encryption Procedure");
+            return false;
         }else{
-            Logger::debug("Crypto:encryptPacket - Successfully Initialized The Encryption Procedure");
+            Logger::debug("HCrypto:encryptPacket - Successfully Initialized The Encryption Procedure");
         }
 
         /* Provide the message to be encrypted, and obtain the encrypted output.
          * EVP_EncryptUpdate can be called multiple times if necessary
          */
         if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, (unsigned char *)payload, (int) strlen(payload))){
-            Logger::debug("Crypto:encryptPacket - There Was An Error Updating Encryption Variables");
-            return;
+            Logger::debug("HCrypto:encryptPacket - There Was An Error Updating Encryption Variables");
+            return false;
         }else{
-            Logger::debug("Crypto:encryptPacket - Successfully Updated Encryption Variables");
+            Logger::debug("HCrypto:encryptPacket - Successfully Updated Encryption Variables");
 
         }
 
@@ -187,15 +192,15 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
          * this stage.
          */
         if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)){
-            Logger::debug("Crypto:encryptPacket - There Was An Error Finalizing Encryption Variables");
-            return;
+            Logger::debug("HCrypto:encryptPacket - There Was An Error Finalizing Encryption Variables");
+            return false;
         }else{
-            Logger::debug("Crypto:encryptPacket - Successfully Finalized Encryption Variables");
+            Logger::debug("HCrypto:encryptPacket - Successfully Finalized Encryption Variables");
         }
 
         ciphertext_len += len;
 
-        Logger::debug("Crypto:encryptPacket - CipherText Length: " + to_string(ciphertext_len));
+        Logger::debug("HCrypto:encryptPacket - CipherText Length: " + to_string(ciphertext_len));
         Logger::debugl("CipherText: ");
         Logger::debugr(ciphertext, ciphertext_len);
 
@@ -204,7 +209,7 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
         memcpy(payload, ciphertext, ciphertext_len);
         payload[ciphertext_len] = '\0';
 
-        Logger::debug("Crypto:encryptPacket - Setting Length To: " + to_string(ciphertext_len + 16));
+        Logger::debug("HCrypto:encryptPacket - Setting Length To: " + to_string(ciphertext_len + 16));
         tls->length = (ciphertext_len + 16);
 
         Logger::debugl("CipherText (copied to payload): >");
@@ -216,7 +221,7 @@ void Crypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
         /* Clean up */
         EVP_CIPHER_CTX_free(ctx);
 
-        return;
+        return true;
 
     }
 

@@ -4,6 +4,8 @@
 
 #include "Authenticator.h"
 
+string Authenticator::password;
+
 bool Authenticator::isAuthenticPacket(char *packet) {
 
     //parameter should be a pointer to the payload of our message ?

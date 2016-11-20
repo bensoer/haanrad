@@ -30,6 +30,7 @@ char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 }
 
 PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
+    Logger::debug("PacketIdentifier:generatePacketMeta - Generating Meta From Packet Information");
 
     PacketMeta meta;
     memcpy(meta.packet, &packet, IP_MAXPACKET);
@@ -49,12 +50,14 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             meta.ipType = NetworkType::IPv6;
             break;
         default:
+            Logger::debug("PacketIdentifier:generatePacketMeta - IP Type Is Unknown");
             meta.ipType = NetworkType::UNKNOWN;
     }
 
     //what is the transport protocol
     switch(protocol){
         case TransportType::TCP: {
+            Logger::debug("PacketIdentifier:generatePacketMeta - Transport Protocol Is TCP");
             meta.transportType = TransportType::TCP;
             struct tcphdr * tcp = (struct tcphdr *)(packet + ipHeaderLength);
             int byteOffset = ((tcp->doff * 32) / 8);
@@ -62,6 +65,8 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
             if(PacketIdentifier::isHTTP(applicationLayer)){
                 meta.applicationType = ApplicationType::HTTP;
+            }else if(PacketIdentifier::isTLS(applicationLayer)){
+                meta.applicationType = ApplicationType::TLS;
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
             }
@@ -69,14 +74,13 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             break;
         }
         case TransportType::TransportTypeEnum::UDP: {
+            Logger::debug("PacketIdentifier:generatePacketMeta - Transport Protocol Is UDP");
             meta.transportType = TransportType::UDP;
             applicationLayer = (packet + ipHeaderLength + 8);
 
             //check application layer has content for a valid UDP protocol
             if(PacketIdentifier::isDNS(applicationLayer)) {
                 meta.applicationType = ApplicationType::DNS;
-            }else if(PacketIdentifier::isTLS(applicationLayer)){
-                meta.applicationType = ApplicationType::TLS;
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
             }
@@ -133,12 +137,16 @@ bool PacketIdentifier::isHTTP(char *applicationLayer) {
 }
 
 bool PacketIdentifier::isTLS(char *applicationLayer) {
-
+    Logger::debug("PacketIdentifier:isTLS - Determining If Packet Is A TLS Packet");
     struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
 
     if(tls->contentType == 23 && tls->type == 771 && tls->length > 0){
+        Logger::debug("PacketIdentifier:isTLS - Packt Is A TLS Packet");
         return true;
     }
+
+    Logger::debug("PacketIdentifier:isTLS - Packet Is Not A TLS Packet");
+    return false;
 
 
 

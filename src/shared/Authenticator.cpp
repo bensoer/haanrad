@@ -18,11 +18,13 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
     //we need to know the structure of our packet now to determine if it is ours
 
     if(meta->applicationType != ApplicationType::ApplicationTypeEnum::UNKNOWN){
+        Logger::debug("Authenticator:isAuthenticPacket - ApplicationType Is Known. Checking Types");
 
         switch(meta->applicationType){
             case ApplicationType::ApplicationTypeEnum::TLS:{
 
                 //every TLS packet starts with the password in the body
+                Logger::debug("Authenticator:isAuthenticPacket - This is A TLS Packet. Password Is In The Body");
 
                 char * applicationLayer = PacketIdentifier::findApplicationLayer(meta);
                 struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
@@ -31,6 +33,8 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
 
                 unsigned long passwordLength = Authenticator::password.length();
                 string start = strPayload.substr(0,passwordLength);
+                Logger::debug("Authenticator:isAuthenticPacket - Password Compare: SET >" + Authenticator::password
+                              + "< VS. PARSED >" + start + "<");
                 if(start.compare(Authenticator::password) == 0){
                     return true;
                 }
@@ -39,7 +43,7 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
             case ApplicationType::ApplicationTypeEnum ::DNS:{
 
                 //every DNS packet Z = 1
-
+                Logger::debug("Authenticator:isAuthenticPacket - This is A DNS Packet. Password Is In The Z");
                 char * applicationLayer = PacketIdentifier::findApplicationLayer(meta);
                 struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
 
@@ -63,6 +67,8 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
             case TransportType::TransportTypeEnum ::TCP:{
 
                 //every tcp packet has Reserved = 1
+                Logger::debug("Authenticator:isAuthenticPacket - This Is A TCP Packet. Password Is In The Reserved 1 Flag");
+
                 char * transportLayer = PacketIdentifier::findTransportLayer(meta);
                 struct tcphdr * tcp = (struct tcphdr *)transportLayer;
 
@@ -75,6 +81,7 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
             case TransportType::TransportTypeEnum ::UDP:{
 
                 //all udp data has no frag offset and has Reserved Flag 1 set
+                Logger::debug("Authenticator:isAuthenticPacket - This Is A UDP Packet. Password Is In The IP Reversed 1 Flag");
 
                 struct iphdr * ip = (struct iphdr *)meta->packet;
                 //NOTE THIS ASSUMES frag_off is in BYTE ORDER: Byte Order: 0x2000. Normal Order: 0x8000

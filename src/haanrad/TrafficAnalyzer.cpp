@@ -6,6 +6,7 @@
 #include "TrafficAnalyzer.h"
 
 #include "../shared/PacketIdentifier.h"
+#include "../shared/Logger.h"
 #include <ctime>
 
 TrafficAnalyzer::TrafficAnalyzer(int historyLength) {
@@ -21,11 +22,20 @@ TrafficAnalyzer::TrafficAnalyzer(int historyLength) {
 }
 
 void TrafficAnalyzer::addPacketMetaToHistory(PacketMeta packet) {
+
     deque<PacketMeta> currentHistory = this->data->back(); //back returns a reference to the last item
+    Logger::debug("TrafficAnalyzer:addPacketMetaToHistory - Adding Packet To History. Current History Holds: "
+                  + to_string(currentHistory.size()) + " Entries");
     currentHistory.push_back(packet);
+    Logger::debug("TrafficAnalyzer:addPacketMetaToHistory - Packet Entry Added. History Now Holds: "
+                  + to_string(currentHistory.size()) + " Entries");
+
+    this->data->emplace_back(currentHistory);
+
 }
 
 void TrafficAnalyzer::setNewTimeSegment() {
+    Logger::debug("TrafficAnalyzer:setNewTimeSegment - Setting New Time Segment");
 
     unsigned long dataLength = this->data->size();
     if(dataLength + 1 > this->historyLength){

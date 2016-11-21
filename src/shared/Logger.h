@@ -31,6 +31,9 @@ public:
 
     static void debugr(unsigned char * message, int length);
 
+    static void hexDebug(unsigned char content);
+    static void hexDebug(unsigned short content);
+
 };
 
 

@@ -27,6 +27,20 @@ void Logger::debugl(unsigned char *message) {
     }
 }
 
+void Logger::hexDebug(unsigned char content) {
+    if(Logger::isDebug){
+        printf("%08x : %d", content, content);
+    }
+}
+
+void Logger::hexDebug(unsigned short content) {
+    if(Logger::isDebug){
+        printf("%08x : %d", content, content);
+    }
+}
+
+
+
 void Logger::debugr(unsigned char *message, int length) {
     if(Logger::isDebug){
         printf(">");

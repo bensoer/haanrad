@@ -180,7 +180,14 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
         return;
     }else{
         if(NetworkMonitor::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
-            Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use The Packet");
+            Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use Packet If It Contains Information");
+
+            //could be a situation here where decryptPacket thought it was TLS but if Authenticator approves it and says its not TLS, something
+            //will have gone wrong
+
+
+            //add the packet to history assuming its not ours
+            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
             return;
         }
     }

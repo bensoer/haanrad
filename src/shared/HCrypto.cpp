@@ -65,6 +65,12 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
             return false;
         }
 
+        //check 128 bits of message exists
+        if(16 > tls->length){
+            Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse IV For Decrypt. Aborting Decryption");
+            return false;
+        }
+
         //grab first 128 bits of the message contianing the iv
         unsigned char iv[17];
         unsigned char encryptedPayload[tls->length - 16];
@@ -75,8 +81,13 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         Logger::debugl(iv);
         Logger::debug("<");
 
+        //check there is payload to take out
+        if((tls->length - 16) <= 0){
+            Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse Contents For Decrypt. Aborting Decryption");
+            return false;
+        }
 
-        Logger::debug("HCrypto:encryptPacket - Length Is: " + to_string(tls->length));
+        Logger::debug("HCrypto:decryptPacket - Length Is: " + to_string(tls->length));
         payload += 16;
         memcpy(&encryptedPayload, payload, (tls->length - 16));
 
@@ -118,6 +129,8 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
         return true;
     }
+
+    return false;
 
 
 }

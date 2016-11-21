@@ -50,6 +50,11 @@ private:
     static NetworkMonitor * instance;
     NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto);
 
+    bool isFullCommand();
+
+    void parseApplicationContent(PacketMeta * meta, char * applicationLayer);
+    void parseTransportContent(PacketMeta * meta);
+
     static void packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet);
 
 public:

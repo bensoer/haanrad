@@ -116,7 +116,7 @@ bool PacketIdentifier::isDNS(char *applicationLayer) {
             //in query the add_count could be from 0 - 2
             if(dns->add_count == 0 || dns->add_count == 1 || dns->add_count == 2){
                 //in query the rcode and z code should be 0
-                if(dns->rcode == 0 && dns->z == 0){
+                if(dns->rcode == 0 && (dns->z == 0 || dns->z == 1)){ // WE NEED Z
                     return true;
                 }
             }
@@ -128,9 +128,10 @@ bool PacketIdentifier::isDNS(char *applicationLayer) {
             //the response counts should be less then 255 though
             if(dns->ans_count < 255 & dns->auth_count < 255 && dns->add_count < 255){
                 //in response z value should still be 0
-                if(dns->z == 0){
+                if(dns->z == 0 || dns->z == 1){ //WE NEED Z
                     return true;
                 }
+
             }
         }
     }
@@ -150,8 +151,13 @@ bool PacketIdentifier::isTLS(char *applicationLayer) {
     Logger::debug("PacketIdentifier:isTLS - Determining If Packet Is A TLS Packet");
     struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
 
+    printf("%08x : %d\n", tls->contentType, tls->contentType);
+    printf("%08x : %d\n", tls->type, tls->type);
+    printf("%08x : %d\n", tls->length, tls->length);
+
+
     if(tls->contentType == 23 && tls->type == 771 && tls->length > 0){
-        Logger::debug("PacketIdentifier:isTLS - Packt Is A TLS Packet");
+        Logger::debug("PacketIdentifier:isTLS - Packet Is A TLS Packet");
         return true;
     }
 

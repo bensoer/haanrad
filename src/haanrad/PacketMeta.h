@@ -8,7 +8,7 @@
 #include <netinet/ip.h>
 
 struct ApplicationType{
-    enum ApplicationTypeEnum { HTTP, DNS, TLS, UNKNOWN = -1};
+    enum ApplicationTypeEnum { HTTP = 80, DNS = 53, TLS = 443, UNKNOWN = -1};
 };
 
 struct TransportType{

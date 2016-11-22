@@ -14,8 +14,24 @@
 //if there is allot of network traffic. sending data could be done alot faster. less traffic will require more stealth
 //in ensuring the correct kind of packet is sent and the number sent is appropriate
 
+#include "TrafficAnalyzer.h"
+#include "../shared/HCrypto.h"
+
 class CovertSocket {
 
+
+private:
+
+    TrafficAnalyzer * trafficAnalyzer = nullptr;
+    HCrypto * crypto = nullptr;
+
+    int rawSocket = -1;
+
+
+public:
+    CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto);
+
+    void send(string command);
 };
 
 

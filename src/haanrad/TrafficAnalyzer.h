@@ -31,6 +31,8 @@ public:
     TrafficAnalyzer(int historyLength);
     void addPacketMetaToHistory(PacketMeta packet);
     void setNewTimeSegment();
+    PacketMeta getBestPacketToSend();
+    PacketMeta getLastPacketAdded();
 
 };
 

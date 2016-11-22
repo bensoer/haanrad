@@ -10,7 +10,8 @@ int main(int argc, char * argv[]){
 
     Logger::setDebug(true);
 
-    SystemState * ss = SystemState::getInstance();
+    Time * time = new Time();
+    SystemState * ss = SystemState::getInstance(time);
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
     HCrypto * crypto = new HCrypto("password");
     NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto, ss);

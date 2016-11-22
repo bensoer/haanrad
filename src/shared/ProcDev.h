@@ -13,11 +13,11 @@ class ProcDev {
 public:
     string interface;
 
-    unsigned long long receivedBytes;
-    unsigned long long receivedPackets;
+    long long receivedBytes;
+    int receivedPackets;
 
-    unsigned long long sentBytes;
-    unsigned long long sentPackets;
+    int sentBytes;
+    long long sentPackets;
 
 };
 

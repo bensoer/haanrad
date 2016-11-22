@@ -21,24 +21,24 @@ public:
     int tty_nr;
     int tpgid;
 
-    unsigned int flags;
-    unsigned long minflt;
-    unsigned long cminflt;
-    unsigned long majflt;
-    unsigned long cmajflt;
+    int flags;
+    long minflt;
+    long cminflt;
+    long majflt;
+    long cmajflt;
 
-    unsigned long utime;
-    unsigned long stime;
-    unsigned int cutime;
-    unsigned int cstime;
+    long utime;
+    long stime;
+    long cutime;
+    long cstime;
 
-    unsigned int priority;
-    unsigned int nice;
-    unsigned int num_threads;
-    unsigned int itrealvalue;
-    unsigned long long starttime;
-    unsigned long vsize;
-    unsigned int rss;
+    long priority;
+    long nice;
+    long num_threads;
+    long itrealvalue;
+    long long starttime;
+    long vsize;
+    long rss;
 
 };
 

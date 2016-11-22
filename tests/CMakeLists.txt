@@ -22,3 +22,12 @@ set(CRYPTO_FILES
         ../src/haanrad/PacketMeta.h ../src/haanrad/PacketMeta.cpp
         ../src/shared/Logger.h ../src/shared/Logger.cpp)
 add_executable(test-crypto ${CRYPTO_FILES})
+
+set(SYSSTATE_FILES
+        test-systemstate/main.cpp
+        ../src/shared/Logger.h ../src/shared/Logger.cpp
+        ../src/haanrad/SystemState.h ../src/haanrad/SystemState.cpp
+        ../src/shared/ProcDev.h ../src/shared/ProcDev.cpp
+        ../src/shared/ProcHelper.h ../src/shared/ProcHelper.cpp
+        ../src/shared/ProcStat.h ../src/shared/ProcStat.cpp)
+add_executable(test-systemstate ${SYSSTATE_FILES})

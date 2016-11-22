@@ -5,6 +5,8 @@
 #ifndef HAANRAD_SYSTEMSTATE_H
 #define HAANRAD_SYSTEMSTATE_H
 
+#include <zconf.h>
+
 //SystemState is a wrapper handler that will get system information about the computers current workings. This
 //will answer how much RAM is being used, CPU usage, process counts, how much work our process is taking
 
@@ -24,26 +26,45 @@
 //How busy is the network ?
 class SystemState {
 
-private:
+public:
+
+
+    enum SystemStateMode { HIGH, MEDIUM, LOW, DORMENT, UNKNOWN, STARTUP};
+
+    static SystemStateMode currentState;
+
+    static SystemState * getInstance();
 
     //these two can tell us how much ram we are using and how that compares to the average, if we are high or not.
     //we want to stay always below average, so that we stay low on detection charts
-    int getPercentageOfRAMUsed();
+    double getPercentageOfRAMUsed();
     double getAverageProcessRAMUsage();
+
+    double getPercentageOfCPUUsed(bool setHistoryOnly = false);
+    double getAverageProcessCPUUsage(bool setHistoryOnly = false);
+
+    unsigned long long getInboundBitRate(bool setHistoryOnly = false);
+    unsigned long long getOutboundBitRate(bool setHistoryOnly = false);
+    void resetNetworkCheckTime();
+
+
+private:
+
+    SystemState();
+    static SystemState * instance;
 
     //these can tell us how much CPU we are using and how that compares to the average
     unsigned long long previousTotalCPUTime = 0;
-    unsigned long long previousHaanradCPUTime = 0;
-    int getPercentageOfCPUUsed();
-    double getAverageProcessCPUUsage();
+    long long previousHaanradCPUTime = 0;
 
     //tell how busy the network is
     unsigned long long previousByteCount = 0;
-    time_t previousCheckTime = 0;
-    unsigned long long getInboundBitRate();
-    unsigned long long getOutboundBitRate();
-    void resetNetworkCheckTime();
+    long int previousCheckTime = 0;
 
+    unsigned long long previousInboundBits = 0;
+    unsigned long long previousOutboundBits = 0;
+
+    long int getSystemTime();
 
 };
 

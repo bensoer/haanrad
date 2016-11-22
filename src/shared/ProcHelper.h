@@ -18,7 +18,7 @@ public:
 
     vector<int> * getAllProcessIDs();
 
-    vector<ProcDev *> * getAllNetworkInterfaceStats();
+    vector<ProcDev> * getAllNetworkInterfaceStats();
 };
 
 

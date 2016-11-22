@@ -19,6 +19,7 @@
 
 #include "TrafficAnalyzer.h"
 #include "../shared/HCrypto.h"
+#include "SystemState.h"
 #include <iostream>
 #include <pcap.h>
 
@@ -37,6 +38,7 @@ private:
 
     TrafficAnalyzer * trafficAnalyzer = nullptr;
     HCrypto * crypto = nullptr;
+    SystemState * ss = nullptr;
 
     pcap_t * currentFD;
 
@@ -48,7 +50,7 @@ private:
     pcap_if_t * listeningInterface = nullptr;
 
     static NetworkMonitor * instance;
-    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto);
+    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto, SystemState * ss);
 
     bool isFullCommand();
 
@@ -61,7 +63,7 @@ public:
 
 
 
-    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto);
+    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto, SystemState * ss);
 
     string * listenForTraffic();
 

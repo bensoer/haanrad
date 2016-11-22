@@ -22,19 +22,20 @@
 
 NetworkMonitor * NetworkMonitor::instance = nullptr;
 
-NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, SystemState * ss) {
 
     this->crypto = crypto;
     this->trafficAnalyzer = trafficAnalyzer;
+    this->ss = ss;
 
     if(!getInterface()){
         Logger::debug("NetworkMonitor - There Was An Error Fetching The Interface For The Monitor");
     }
 }
 
-NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
+NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, SystemState * ss) {
     if(NetworkMonitor::instance == nullptr){
-        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto);
+        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto, ss);
     }
 
     return NetworkMonitor::instance;
@@ -162,6 +163,11 @@ void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
 
 void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {
 
+    //check with SystemState for the current state. If were DORMANT. We Need To Stop!
+
+    //if we are STARTUP. Then as soon as we know its a DNS packet -> put it into the TrafficAnalyzer and halt
+
+
     char * BUFFER = (char *)(packet + 16);
 
     struct iphdr * ip = (struct iphdr *)BUFFER;
@@ -236,32 +242,32 @@ void NetworkMonitor::killListening() {
 
 bool NetworkMonitor::getInterface() {
 
-    Logger::debug("Main:getInterfaces - Initializing");
+    Logger::debug("NetworkMonitor:getInterfaces - Initializing");
 
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_if_t * interfaces;
     pcap_if_t * interface;
 
-    Logger::debug("Main:getInterfaces - Finding All Interfaces");
+    Logger::debug("NetworkMontor:getInterfaces - Finding All Interfaces");
 
     if(pcap_findalldevs(&interfaces, errbuf) == -1){
-        Logger::error("Main:getInterfaces - There Was An Error Fetching The Interfaces");
+        Logger::error("NetworkMonitor:getInterfaces - There Was An Error Fetching The Interfaces");
         cerr << errbuf << endl;
         return false;
     }
 
-    Logger::debug("Main:getInterfaces - Looping Through All Interfaces") ;
+    Logger::debug("NetworkMonitor:getInterfaces - Looping Through All Interfaces") ;
 
     allInterfaces = interfaces;
     interface = interfaces;
     while(interface != NULL){
         const char * name = interface->name;
 
-        Logger::debug("Main:getInterfaces - Testing Interface With Name: " + string(name));
+        Logger::debug("NetworkMonitor:getInterfaces - Testing Interface With Name: " + string(name));
 
         if(strcmp(name, string("any").c_str()) == 0){
             //this is the any interface
-            Logger::debug("Main:getInterfaces - FOUND THE ANY INTERFACE");
+            Logger::debug("NetworkMonitor:getInterfaces - FOUND THE ANY INTERFACE");
 
             listeningInterface = interface;
             return true;
@@ -275,6 +281,8 @@ bool NetworkMonitor::getInterface() {
 
 string * NetworkMonitor::listenForTraffic() {
 
+    //determine how we should listen - ask the SystemState what the current state is
+    //if STARTUP then we need to only listen for DNS packets
 
     char errbuf[PCAP_ERRBUF_SIZE];
     bpf_u_int32 subnetMask;

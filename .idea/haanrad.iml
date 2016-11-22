@@ -23,6 +23,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/shared/PacketIdentifier.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Structures.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/shared/argparcer.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Logger.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcHelper.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.h" isTestSource="false" />

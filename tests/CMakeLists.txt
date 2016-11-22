@@ -12,7 +12,11 @@ set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
         ../src/haanrad/TrafficAnalyzer.h ../src/haanrad/TrafficAnalyzer.cpp
         ../src/shared/Authenticator.h ../src/shared/Authenticator.cpp
         ../src/shared/PacketIdentifier.cpp ../src/shared/PacketIdentifier.h
-        ../src/shared/HCrypto.cpp ../src/shared/HCrypto.h)
+        ../src/shared/HCrypto.cpp ../src/shared/HCrypto.h
+        ../src/haanrad/SystemState.cpp ../src/haanrad/SystemState.h
+        ../src/shared/ProcDev.h ../src/shared/ProcDev.cpp
+        ../src/shared/ProcHelper.h ../src/shared/ProcHelper.cpp
+        ../src/shared/ProcStat.h ../src/shared/ProcStat.cpp)
 add_executable(test-networkmonitor ${NETWORK_MONITOR_FILES})
 
 set(CRYPTO_FILES

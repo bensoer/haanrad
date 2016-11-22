@@ -10,9 +10,10 @@ int main(int argc, char * argv[]){
 
     Logger::setDebug(true);
 
+    SystemState * ss = SystemState::getInstance();
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
     HCrypto * crypto = new HCrypto("password");
-    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto);
+    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto, ss);
 
     string * command = monitor->listenForTraffic();
 

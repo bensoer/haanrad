@@ -6,6 +6,7 @@
 #define HAANRAD_SYSTEMSTATE_H
 
 #include <zconf.h>
+#include "Time.h"
 
 //SystemState is a wrapper handler that will get system information about the computers current workings. This
 //will answer how much RAM is being used, CPU usage, process counts, how much work our process is taking
@@ -33,7 +34,7 @@ public:
 
     static SystemStateMode currentState;
 
-    static SystemState * getInstance();
+    static SystemState * getInstance(Time * time);
 
     //these two can tell us how much ram we are using and how that compares to the average, if we are high or not.
     //we want to stay always below average, so that we stay low on detection charts
@@ -50,8 +51,10 @@ public:
 
 private:
 
-    SystemState();
+    SystemState(Time * time);
     static SystemState * instance;
+
+    Time * time;
 
     //these can tell us how much CPU we are using and how that compares to the average
     unsigned long long previousTotalCPUTime = 0;

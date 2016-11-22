@@ -13,7 +13,8 @@
 SystemState::SystemStateMode SystemState::currentState = SystemStateMode::STARTUP;
 SystemState * SystemState::instance = nullptr;
 
-SystemState::SystemState() {
+SystemState::SystemState(Time * time) {
+    this->time = time;
 
     this->resetNetworkCheckTime();
 
@@ -24,10 +25,10 @@ SystemState::SystemState() {
     this->getPercentageOfCPUUsed(true);
 }
 
-SystemState * SystemState::getInstance() {
+SystemState * SystemState::getInstance(Time * time) {
 
     if(SystemState::instance == nullptr){
-        SystemState::instance = new SystemState();
+        SystemState::instance = new SystemState(time);
     }
 
     return SystemState::instance;

@@ -74,11 +74,11 @@ string * ProcessDistorter::findPopularProcessName() {
     DIR *dp;
     struct dirent *dirp;
     if((dp = opendir("/proc")) == NULL){
-        Logger::debug("Failed To Open Proc Folder. Can't Get Stats");
+        Logger::debug("ProcessDistortor:findPopularProcessName - Failed To Open Proc Folder. Can't Get Stats");
         return nullptr;
     }
 
-    Logger::debug("ProcessDistorter - Reading Proc Folder Contents. Searching For Process Folders");
+    Logger::debug("ProcessDistorter:findPopularProcessName - Reading Proc Folder Contents. Searching For Process Folders");
     while((dirp = readdir(dp)) != NULL){
         if(dirp->d_type == DT_DIR){
 
@@ -133,7 +133,7 @@ string * ProcessDistorter::findPopularProcessName() {
         }
     });
 
-    Logger::debug("Searching For Most Common Process");
+    Logger::debug("ProcessDistorter - Searching For Most Common Process");
     pair<string,int> mostCommonProcess = pair<string, int>("unknown", 0);
     //now find the highest one
     for_each(processes->begin(), processes->end(), [&mostCommonProcess](pair<string,int> process){

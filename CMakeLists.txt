@@ -21,7 +21,8 @@ set(HAANRAD_FILES
         src/haanrad/PacketMeta.cpp src/haanrad/PacketMeta.h
         src/shared/Structures.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
-        src/shared/HCrypto.cpp src/shared/HCrypto.h)
+        src/shared/HCrypto.cpp src/shared/HCrypto.h
+        src/shared/argparcer.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
 set(CLIENT_FILES

@@ -9,6 +9,15 @@
 //happen at appropriate points of execution
 class Time {
 
+    //called by SystemState to change the frequency
+    void setNewTimeInterval(int interval);
+
+    //hanging function for CovertSocket ? Release will cause it to send
+    void covertSocketIsReady();
+
+    //hanging function for Main ? Release will cause it to move to next step
+    void mainIsReady();
+
 };
 
 

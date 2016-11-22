@@ -3,3 +3,15 @@
 //
 
 #include "Time.h"
+
+void Time::setNewTimeInterval(int interval) {
+
+}
+
+void Time::covertSocketIsReady() {
+
+}
+
+void Time::mainIsReady() {
+
+}

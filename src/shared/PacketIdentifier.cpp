@@ -5,6 +5,7 @@
 #include "PacketIdentifier.h"
 #include "Structures.h"
 #include "Logger.h"
+#include "../haanrad/SystemState.h"
 #include <netinet/tcp.h>
 #include <cstring>
 
@@ -43,10 +44,9 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
     Logger::debug("PacketIdentifier:generatePacketMeta - Generating Meta From Packet Information");
 
     PacketMeta meta;
-    memcpy(meta.packet, &packet, IP_MAXPACKET);
+    memcpy(meta.packet, packet, IP_MAXPACKET);
 
     struct iphdr * ip = (struct iphdr *)packet;
-    char * applicationLayer = nullptr;
     int ipHeaderType = ip->version;
     int ipHeaderLength = (ip->ihl * 4);
     int protocol = ip->protocol;
@@ -71,7 +71,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
             meta.transportType = TransportType::TCP;
             struct tcphdr * tcp = (struct tcphdr *)(packet + ipHeaderLength);
             int byteOffset = ((tcp->doff * 32) / 8);
-            applicationLayer = (packet + ipHeaderLength + byteOffset);
+            char * applicationLayer = (packet + ipHeaderLength + byteOffset);
 
             if(PacketIdentifier::isHTTP(applicationLayer)){
                 meta.applicationType = ApplicationType::HTTP;
@@ -86,7 +86,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
         case TransportType::TransportTypeEnum::UDP: {
             Logger::debug("PacketIdentifier:generatePacketMeta - Transport Protocol Is UDP");
             meta.transportType = TransportType::UDP;
-            applicationLayer = (packet + ipHeaderLength + 8);
+            char * applicationLayer = (packet + ipHeaderLength + 8);
 
             //check application layer has content for a valid UDP protocol
             if(PacketIdentifier::isDNS(applicationLayer)) {
@@ -108,20 +108,31 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 }
 
 bool PacketIdentifier::isDNS(char *applicationLayer) {
-
+    Logger::debug("PacketIdentifier:isDNS - Determining If Packet Is A DNS Packet");
     struct DNS_HEADER * dns = (struct DNS_HEADER * )applicationLayer;
+
     if(dns->qr == 0){
         //in a query the answer and auth should be 0, with questions at 1
-        if(dns->ans_count == 0 && dns->auth_count == 0  && dns->q_count == 1){
+        short ans_count = ntohs(dns->ans_count);
+        short auth_count = ntohs(dns->auth_count);
+        short q_count = ntohs(dns->q_count);
+        if(ans_count == 0 && auth_count == 0  && q_count == 1){
             //in query the add_count could be from 0 - 2
-            if(dns->add_count == 0 || dns->add_count == 1 || dns->add_count == 2){
+            short add_count = ntohs(dns->add_count);
+            if(add_count == 0 || add_count == 1 || add_count == 2){
                 //in query the rcode and z code should be 0
                 if(dns->rcode == 0 && (dns->z == 0 || dns->z == 1)){ // WE NEED Z
+                    Logger::debug("PacketIdentifier:isDNS - Packet Is A DNS Query");
                     return true;
                 }
             }
         }
     }else if(dns->qr == 1){
+        //if were in startup we only want DNS requests to qualify as a DNS thing
+        if(SystemState::currentState == SystemState::STARTUP){
+            Logger::debug("PacketIdentifier:isDNS - STARTUP State Detected. Packet Might Be A DNS Response. We Only Want Queries");
+            return false;
+        }
 
         //in response questions should still be one but answers could be anywhere from 0 or more
         if((dns->ans_count >= 0 || dns->auth_count >= 0 || dns->add_count >= 0) && dns->q_count == 1){
@@ -129,11 +140,14 @@ bool PacketIdentifier::isDNS(char *applicationLayer) {
             if(dns->ans_count < 255 & dns->auth_count < 255 && dns->add_count < 255){
                 //in response z value should still be 0
                 if(dns->z == 0 || dns->z == 1){ //WE NEED Z
+                    Logger::debug("PacketIdentifier:isDNS - Packet Is a DNS Response");
                     return true;
                 }
 
             }
         }
+    }else{
+        Logger::debug("PacketIDentifier:isDNS - Packet Is Not A DNS Packet");
     }
 
     return false;

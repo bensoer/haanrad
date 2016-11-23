@@ -33,7 +33,8 @@ set(CLIENT_FILES
         src/shared/ProcHelper.cpp src/shared/ProcHelper.h src/shared/ProcStat.cpp
         src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
-        src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h)
+        src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
+        src/haanrad/SystemState.cpp src/haanrad/SystemState.h)
 add_executable(client ${CLIENT_FILES})
 
 

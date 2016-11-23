@@ -20,7 +20,14 @@ HCrypto::~HCrypto() {
     ERR_free_strings();
 }
 
-HCrypto::HCrypto(std::string key) {
+HCrypto::HCrypto() {
+    ERR_load_crypto_strings();
+    OpenSSL_add_all_algorithms();
+    OPENSSL_config(NULL);
+}
+
+void HCrypto::initialize(string key) {
+
     Logger::debug("HCrypto - Setting Key");
     this->plainKey = key;
 
@@ -37,9 +44,6 @@ HCrypto::HCrypto(std::string key) {
     this->cypherkey[SHA256_DIGEST_LENGTH] = '\0';
 
     Logger::debug("HCrypto - Loading All Configurations For OpenSSL");
-    ERR_load_crypto_strings();
-    OpenSSL_add_all_algorithms();
-    OPENSSL_config(NULL);
 
 }
 

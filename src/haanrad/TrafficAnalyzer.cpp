@@ -158,7 +158,7 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
 }
 
 PacketMeta TrafficAnalyzer::getLastPacketAdded() {
-
+    Logger::debug("TrafficAnalyzer:getLastPacketAdded - Fetching Last Packet Added To TrafficAnalyser");
     deque<PacketMeta> currentHistory = this->data->back();
     return currentHistory.back();
 }

@@ -8,7 +8,8 @@ int main(int argc, char * argv[]){
 
     Logger::setDebug(true);
     Logger::debug("Creating System State");
-    SystemState * ss = SystemState::getInstance();
+    Time * time = new Time();
+    SystemState * ss = SystemState::getInstance(time);
 
     Logger::debug("Calculating CPU Stats");
 

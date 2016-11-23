@@ -38,7 +38,6 @@ private:
 
     TrafficAnalyzer * trafficAnalyzer = nullptr;
     HCrypto * crypto = nullptr;
-    SystemState * ss = nullptr;
 
     pcap_t * currentFD;
 
@@ -50,7 +49,7 @@ private:
     pcap_if_t * listeningInterface = nullptr;
 
     static NetworkMonitor * instance;
-    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto, SystemState * ss);
+    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto);
 
     bool isFullCommand();
 
@@ -63,7 +62,7 @@ public:
 
 
 
-    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto, SystemState * ss);
+    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto);
 
     string * listenForTraffic();
 

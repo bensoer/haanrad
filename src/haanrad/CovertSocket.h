@@ -27,9 +27,13 @@ private:
 
     int rawSocket = -1;
 
+    string clientIP;
+
+    unsigned short csum(unsigned short *ptr, int nbytes);
+
 
 public:
-    CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto);
+    CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, string clientIP);
 
     void send(string command);
 };

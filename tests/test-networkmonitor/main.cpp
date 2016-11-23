@@ -14,7 +14,7 @@ int main(int argc, char * argv[]){
     SystemState * ss = SystemState::getInstance(time);
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
     HCrypto * crypto = new HCrypto("password");
-    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto, ss);
+    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto);
 
     string * command = monitor->listenForTraffic();
 

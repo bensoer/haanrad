@@ -38,7 +38,8 @@ int main(int argc, char * argv[]){
     memcpy(ptr, message, sizeof(message));
 
     Logger::debug("Creating Crypto Handler");
-    HCrypto * crypto = new HCrypto("password");
+    HCrypto * crypto = new HCrypto();
+    crypto->initialize("password");
     Logger::debug("Now Encrypting");
     crypto->encryptPacket(meta, applicationLayer);
     Logger::debug("Now Decrypting");

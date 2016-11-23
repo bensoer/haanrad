@@ -13,7 +13,8 @@ int main(int argc, char * argv[]){
     Time * time = new Time();
     SystemState * ss = SystemState::getInstance(time);
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
-    HCrypto * crypto = new HCrypto("password");
+    HCrypto * crypto = new HCrypto();
+    crypto->initialize("password");
     NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto);
 
     string * command = monitor->listenForTraffic();

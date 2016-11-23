@@ -1,6 +1,8 @@
 #include <iostream>
 #include "MessageQueue.h"
 #include "CommHandler.h"
+#include "../shared/Logger.h"
+#include "../shared/HCrypto.h"
 
 
 void * listenBootstrapper(void * commHandlerListener){
@@ -17,12 +19,17 @@ void * sendBootstrapper(void * commHandlerSender){
 
 int main() {
 
+    Logger::setDebug(true);
+
     //Create MessageQueue
     MessageQueue * queue = new MessageQueue();
+    HCrypto * crypto = new HCrypto();
 
     //Create CommHandler
     // - Pass MessageQueue
-    CommHandler * commHandler = CommHandler::getInstance(queue);
+    CommHandler * commHandler = CommHandler::getInstance(queue, crypto);
+
+    commHandler->listenForMessages();
 
     //Spawn CommHandler on new Thread
 

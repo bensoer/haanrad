@@ -128,13 +128,7 @@ bool PacketIdentifier::isDNS(char *applicationLayer) {
             }
         }
     }else if(dns->qr == 1){
-        //if were in startup we only want DNS requests to qualify as a DNS thing
-        if(SystemState::currentState == SystemState::STARTUP){
-            Logger::debug("PacketIdentifier:isDNS - STARTUP State Detected. Packet Might Be A DNS Response. We Only Want Queries");
-            return false;
-        }
-
-        //in response questions should still be one but answers could be anywhere from 0 or more
+         //in response questions should still be one but answers could be anywhere from 0 or more
         if((dns->ans_count >= 0 || dns->auth_count >= 0 || dns->add_count >= 0) && dns->q_count == 1){
             //the response counts should be less then 255 though
             if(dns->ans_count < 255 & dns->auth_count < 255 && dns->add_count < 255){

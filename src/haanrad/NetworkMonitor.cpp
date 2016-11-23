@@ -190,9 +190,23 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
             return;
         }else{
             //it is a DNS packet
-            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
-            NetworkMonitor::instance->killListening();
-            return;
+
+            //check that it is a request packet
+            Logger::debug("NetworkMonitor:listenForTraffic - Found DNS Packet. Confirming Is A Request Packet");
+            struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
+            if(dns->qr ==0 ){
+                Logger::debug("NetworkMonitor:listenForTraffic - It Is A Request Packet");
+                //this is a query
+                NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                NetworkMonitor::instance->killListening();
+                return;
+            }else{
+                Logger::debug("NetworkMonitor:listenForTraffic - Packet Is A Response. Can't Use For Contacting Home");
+                //this is a response
+                return;
+            }
+
+
         }
     }
 

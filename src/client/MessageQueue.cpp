@@ -13,10 +13,25 @@ void MessageQueue::sendToHaanrad(Message message) {
 
 Message MessageQueue::recvFromHaanrad() {
     messageLock.lock();
-    Message message = haanrad2Client.front();
-    haanrad2Client.pop();
-    messageLock.unlock();
-    return message;
+
+    if(haanrad2Client.empty()){
+        messageLock.unlock();
+
+        Message message;
+        message.messageType = MessageType::INTERCLIENT;
+        message.interMessageCode = InterClientMessageType::EMPTY;
+        //message.rawCommandMessage = "";
+        //message.data = "";
+
+        return message;
+    }else{
+        Message message = haanrad2Client.front();
+        haanrad2Client.pop();
+        messageLock.unlock();
+        return message;
+    }
+
+
 }
 
 void MessageQueue::addMessageResponse(Message message) {

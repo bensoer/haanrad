@@ -194,17 +194,26 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
             //check that it is a request packet
             Logger::debug("NetworkMonitor:listenForTraffic - Found DNS Packet. Confirming Is A Request Packet");
             struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
-            if(dns->qr ==0 ){
-                Logger::debug("NetworkMonitor:listenForTraffic - It Is A Request Packet");
-                //this is a query
-                NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
-                NetworkMonitor::instance->killListening();
-                return;
+            struct udphdr * udp = (struct udphdr *)PacketIdentifier::findTransportLayer(&meta);
+            if(udp != nullptr){
+                short destPort = ntohs(udp->dest);
+                if(destPort == 53 || destPort == 5353 || destPort == 5355){ //need to control what is possible here
+                    if(dns->qr ==0 ){
+                        Logger::debug("NetworkMonitor:listenForTraffic - It Is A Request Packet");
+                        //this is a query
+                        NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                        NetworkMonitor::instance->killListening();
+                        return;
+                    }
+                }
             }else{
-                Logger::debug("NetworkMonitor:listenForTraffic - Packet Is A Response. Can't Use For Contacting Home");
-                //this is a response
-                return;
+                Logger::debug("NetworkMonitor:listenForTraffic - Could Not Find TransportLayer. Can't Parse Packet To Send");
             }
+
+            Logger::debug("NetworkMonitor:listenForTraffic - Packet Is A Response. Can't Use For Contacting Home");
+            //this is a response
+            return;
+
 
 
         }

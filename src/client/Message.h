@@ -12,14 +12,19 @@
 
 struct MessageType{
     enum MessageTypeEnum { DUD = 0x00, CMD = 0x01, FILE = 0x02, CMDANSWER = 0xFE, FILEANSWER = 0xFC,
-        FILEDWNLD = 0x03, SPCCMD = 0x04};
+        FILEDWNLD = 0x03, SPCCMD = 0x04, INTERCLIENT};
+};
+
+struct InterClientMessageType{
+    enum InterClientMessageTypeEnum { NONE, CONNECTED, DISCONNECTED, ERROR, ABORT, EMPTY};
 };
 
 class Message {
 
 public:
-    std::string rawMessage;
+    std::string rawCommandMessage;
     MessageType::MessageTypeEnum messageType;
+    InterClientMessageType::InterClientMessageTypeEnum interMessageCode;
     std::string data;
 
 };

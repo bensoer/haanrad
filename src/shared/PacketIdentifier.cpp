@@ -5,9 +5,10 @@
 #include "PacketIdentifier.h"
 #include "Structures.h"
 #include "Logger.h"
-#include "../haanrad/SystemState.h"
 #include <netinet/tcp.h>
 #include <cstring>
+
+std::mutex PacketIdentifier::lock;
 
 char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 
@@ -40,11 +41,23 @@ char* PacketIdentifier::findTransportLayer(PacketMeta *meta) {
     return transportLayer;
 }
 
-PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
+PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET], int length) {
+    PacketIdentifier::lock.lock();
+
     Logger::debug("PacketIdentifier:generatePacketMeta - Generating Meta From Packet Information");
 
+
     PacketMeta meta;
-    memcpy(meta.packet, packet, IP_MAXPACKET);
+    if(length > -1){
+        for(int i = 0; i < length; i++){
+            meta.packet[i] = packet[i];
+        }
+    }else{
+        for(int i = 0; i < IP_MAXPACKET; i++){
+            meta.packet[i] = packet[i];
+        }
+    }
+
 
     struct iphdr * ip = (struct iphdr *)packet;
     int ipHeaderType = ip->version;
@@ -103,6 +116,7 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET]) {
 
     }
 
+    PacketIdentifier::lock.unlock();
     return meta;
 
 }

@@ -124,8 +124,6 @@ int main(int argc, char * argv[]) {
     CovertSocket * covertSocket = new CovertSocket(analyzer, crypto, clientIP);
     covertSocket->send(dnsQuery);
 
-
-
     // - Pass TrafficAnalyzer
 
     //Create CovertSocket

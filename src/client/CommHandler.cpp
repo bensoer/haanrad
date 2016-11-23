@@ -134,7 +134,7 @@ bool CommHandler::isValidAuth(PacketMeta meta) {
     Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Parsed Destination Port: " + to_string(destPort));
 
     //confirm its for us and DNS using one of the typical DNS destination ports - Google likes to use 5353
-    if(destPort == 53 || destPort == 5353){
+    if(destPort == 53 || destPort == 5353 || destPort == 5355){
         return true;
     }
 
@@ -153,7 +153,7 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
     Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - IP Header Length: " + to_string(ipHeaderLength));
     Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Protocol: " + to_string(protocol));
 
-    PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER);
+    PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER, pkt_info->len);
 
     if(CommHandler::instance->haanradConnected == false){
         Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Haanrad Hasn't Contacted. Filtering For Passwords Only");
@@ -177,8 +177,17 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
             Authenticator::setPassword(password);
             CommHandler::instance->crypto->initialize(password);
 
-            CommHandler::instance->killListening();
+            Message message;
+            message.messageType = MessageType::INTERCLIENT;
+            message.interMessageCode = InterClientMessageType::CONNECTED;
+            message.data = "Haanrad Connected!";
+
+            CommHandler::instance->messageQueue->addMessageResponse(message);
         }
+    }else{
+
+        //we are connected and ready to rooooolllllll
+
 
     }
 

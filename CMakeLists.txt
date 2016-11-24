@@ -10,7 +10,7 @@ set(HAANRAD_FILES
         src/haanrad/TrafficAnalyzer.cpp src/haanrad/TrafficAnalyzer.h
         src/haanrad/ProcessDistorter.cpp src/haanrad/ProcessDistorter.h
         src/haanrad/NetworkMonitor.cpp src/haanrad/NetworkMonitor.h
-        src/haanrad/CovertSocket.cpp src/haanrad/CovertSocket.h
+        src/haanrad/covertsocket/CovertSocket.cpp src/haanrad/covertsocket/CovertSocket.h
         src/haanrad/SystemState.cpp src/haanrad/SystemState.h
         src/haanrad/Time.cpp src/haanrad/Time.h
         src/haanrad/NetworkMonitorThread.cpp src/haanrad/NetworkMonitorThread.h
@@ -22,7 +22,7 @@ set(HAANRAD_FILES
         src/shared/Structures.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
-        src/shared/argparcer.h)
+        src/shared/argparcer.h src/haanrad/covertsocket/CovertSocketThread.cpp src/haanrad/covertsocket/CovertSocketThread.h src/haanrad/covertsocket/CovertSocketQueue.cpp src/haanrad/covertsocket/CovertSocketQueue.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
 set(CLIENT_FILES

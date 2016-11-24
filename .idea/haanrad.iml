@@ -7,13 +7,27 @@
       <sourceFolder url="file://$MODULE_DIR$/tests/test-networkmonitor/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/test-crypto/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/PacketMeta.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocketThread.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocketQueue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocketThread.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocketQueue.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/PacketMeta.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/HCrypto.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcDev.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.h" isTestSource="false" />
@@ -30,23 +44,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/shared/PacketIdentifier.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/Authenticator.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shared/ProcStat.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/PacketMeta.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/CovertSocket.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/PacketMeta.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitor.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/main.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/SystemState.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/NetworkMonitorThread.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/CommHandler.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/Message.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/client/MessageQueue.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

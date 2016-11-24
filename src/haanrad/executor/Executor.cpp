@@ -18,12 +18,11 @@ Message Executor::formatCommand(std::string haanradPacket) {
     unsigned char cmdType = (unsigned char)haanradPacket.at(5);
     //unsigned int hex = (unsigned int)cmdType;
 
-
-    if(cmdType == to_string(MessageType::CMD).at(0)){
+    if(cmdType == MessageType::CMD){
         message.messageType = MessageType::CMD;
-    }else if(cmdType == to_string(MessageType::FILE).at(0)){
+    }else if(cmdType == MessageType::FILE){
         message.messageType = MessageType::FILE;
-    }else if(cmdType == to_string(MessageType::FILESYNC).at(0)){
+    }else if(cmdType == MessageType::FILESYNC){
         message.messageType = MessageType::FILESYNC;
     }else{
         Logger::debug("Executor:formatCommand - Can Not Determine Message Type. Can't Format Properly");

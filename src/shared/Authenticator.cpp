@@ -132,6 +132,7 @@ bool Authenticator::addAuthSignature(PacketMeta * meta) {
 
                 string signedPayload = Authenticator::password + strPayload;
                 memcpy(payload, signedPayload.c_str(), signedPayload.size());
+                payload[signedPayload.length()] = '\0';
 
                 break;
             }

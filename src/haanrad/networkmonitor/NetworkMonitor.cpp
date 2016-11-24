@@ -233,18 +233,20 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
             //add the packet to history assuming its not ours
             NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
             return;
-        }
-
-        Logger::debug("NetworkMonitor:listenForTraffic - TLS Decryption Successfull. Now Authenticating");
-        //now authenticate
-        if(Authenticator::isAuthenticPacket(&meta)){
-            Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet IS Ours. Parsing Contents");
-
-            NetworkMonitor::instance->parseApplicationContent(&meta, applicationLayer);
         }else{
-            Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet Is Not Ours. Add To TrafficAnayzer");
-            //if it is not our packet give it to the TrafficAnalyzer
-            NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+
+            Logger::debug("NetworkMonitor:listenForTraffic - TLS Decryption Successfull. Now Authenticating");
+            //now authenticate
+            if(Authenticator::isAuthenticPacket(&meta)){
+                Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet IS Ours. Parsing Contents");
+
+                NetworkMonitor::instance->parseApplicationContent(&meta, applicationLayer);
+            }else{
+                Logger::debug("NetworkMonitor:listenForTraffic - TLS Packet Decrypted But Did Not Authenticate");
+                //if it is not our packet give it to the TrafficAnalyzer
+                //because it decrypted but did not authenticate, its a wierd packet. we nothing to do with it. might be our own anyway
+                //NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+            }
         }
 
         //else this is not a TLS packet and we can Authenticate it first before decrypting
@@ -264,7 +266,9 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
                 //will have gone wrong
 
                 //add the packet to history assuming its not ours
-                NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                //NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                //because its not TLS, we can authenticate it, it passed authentication, but failed decryption. this could
+                //be our own sendout getting caught back in. shouldn't keep it
                 return;
             }
 

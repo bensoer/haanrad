@@ -19,6 +19,7 @@ std::string ExecutorQueue::getExecutionTask() {
         return "";
     }else{
         std::string haanradPacket = this->queue.front();
+        this->queue.pop();
         this->lock.unlock();
         return haanradPacket;
     }

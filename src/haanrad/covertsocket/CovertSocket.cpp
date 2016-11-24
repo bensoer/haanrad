@@ -125,12 +125,19 @@ void CovertSocket::send(string payload) {
                         tcp->check = 0;
                         tcp->th_sum = 0;
 
-                        Authenticator::addAuthSignature(&meta);
                         char * applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
                         if(applicationLayer == nullptr){
                             Logger::debug("CovertSocket:send - Unable To Find Application Layer For TLS Encryption. Can't Encrypt. Can't Send");
                             return;
                         }
+
+                        //copy the payload into the TLS body
+                        char * tlsPayload = applicationLayer + sizeof(TLS_HEADER);
+                        memcpy(tlsPayload, acceptablePortion.c_str(), acceptablePortion.size());
+                        tlsPayload[acceptablePortion.length()] = '\0';
+
+                        Authenticator::addAuthSignature(&meta);
+
                         this->crypto->encryptPacket(&meta, applicationLayer);
 
                         struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
@@ -239,7 +246,7 @@ void CovertSocket::send(string payload) {
                         Logger::debug("CovertSocket:Send - Packet Is A TCP Packet. Payload Will Be Sent In TCP Packet");
 
                         string tcpPayload = "";
-                        if(tcpPayload < 2){
+                        if(currentPayload.length() < 2){
                             tcpPayload = currentPayload;
                         }else{
                             tcpPayload = currentPayload.substr(0,2);
@@ -295,7 +302,12 @@ void CovertSocket::send(string payload) {
                             Logger::debug("CovertSocket - SendTo Failed. Error: " + string(strerror(errno)));
                         }
 
-                        currentPayload = currentPayload.substr(2);
+                        if(currentPayload.length() < 2){
+                            currentPayload = "";
+                        }else{
+                            currentPayload = currentPayload.substr(2);
+                        }
+
                         break;
 
                     }
@@ -348,6 +360,8 @@ void CovertSocket::send(string payload) {
                         }
 
                         currentPayload = currentPayload.substr(1);
+
+
                         break;
 
                     }

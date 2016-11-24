@@ -42,9 +42,6 @@ void NetworkMonitorThread::start() {
         //from here it should pass this contents to the executor to sort out
         this->executorQueue->addToExecutor(*haanradPacket);
 
-        //cleanup the string
-        delete(haanradPacket);
-
     }
 }
 

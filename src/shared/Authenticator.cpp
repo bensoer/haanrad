@@ -110,6 +110,10 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
     };
 }
 
+string Authenticator::getPassword() {
+    return Authenticator::password;
+}
+
 bool Authenticator::addAuthSignature(PacketMeta * meta) {
 
     //parameter should be a pointer to the payload of our message ?

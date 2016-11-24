@@ -15,8 +15,22 @@ Message Executor::formatCommand(std::string haanradPacket) {
     message.rawCommandMessage = haanradPacket;
     message.interMessageCode = InterClientMessageType::NONE;
 
-    char cmdType = haanradPacket.at(5);
-    message.messageType = (MessageType::MessageTypeEnum)cmdType;
+    unsigned char cmdType = (unsigned char)haanradPacket.at(5);
+    //unsigned int hex = (unsigned int)cmdType;
+
+
+    if(cmdType == to_string(MessageType::CMD).at(0)){
+        message.messageType = MessageType::CMD;
+    }else if(cmdType == to_string(MessageType::FILE).at(0)){
+        message.messageType = MessageType::FILE;
+    }else if(cmdType == to_string(MessageType::FILESYNC).at(0)){
+        message.messageType = MessageType::FILESYNC;
+    }else{
+        Logger::debug("Executor:formatCommand - Can Not Determine Message Type. Can't Format Properly");
+        message.interMessageCode = InterClientMessageType::ERROR;
+        message.messageType = MessageType::INTERCLIENT;
+        return message;
+    }
 
     unsigned long ending = haanradPacket.find("HAAN}");
     if(ending == string::npos){
@@ -33,7 +47,7 @@ Message Executor::formatCommand(std::string haanradPacket) {
     return message;
 }
 
-//returns whatever is the appropriate response for the execution (not as a packet though)
+//returns whatever is the appropriate response for the execution as haanrad packet
 std::string Executor::execute(Message message) {
 
     //if it is a CMD, exeute it here
@@ -41,7 +55,15 @@ std::string Executor::execute(Message message) {
 
     if(message.messageType == MessageType::CMD){
         Logger::debug("Executor:execute - Command To Be Executed Is A CMD Command");
-        return Executor::executeOnConsole(message);
+        string output = Executor::executeOnConsole(message);
+        unsigned char cmdType = (unsigned char)MessageType::CMDANSWER;
+        string haanradPacket = "{HAAN";
+        haanradPacket += cmdType;
+        haanradPacket += output;
+        haanradPacket += "HAAN}";
+
+        return haanradPacket;
+
     }else if(message.messageType == MessageType::FILE || message.messageType == MessageType::FILESYNC){
         Logger::debug("Executor:execute - Command To Be Execute Is A FILE or FILESYNC Command [NOT IMPLEMENTED]");
     }else if(message.messageType == MessageType::SPCCMD){

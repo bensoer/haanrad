@@ -27,22 +27,22 @@ Message generateHaanradPacket(string haanradCommand){
     //generate the mode byte
     if(haanradCommand.find("hexec") ==0){
         //this is to execute
-        char pktMode = (char)MessageType::CMD;
+        unsigned char pktMode = (unsigned char)MessageType::CMD;
         message.messageType = MessageType::CMD;
-        haanradPacket += to_string(pktMode);
+        haanradPacket += pktMode;
     }else if(haanradCommand.find("hlisten") == 0){
         //this is to listen
-        char pktMode = (char)MessageType::FILE;
+        unsigned char pktMode = (unsigned char)MessageType::FILE;
         message.messageType = MessageType::FILE;
         haanradPacket += to_string(pktMode);
     }else if(haanradCommand.find("hsync") == 0){
         //this is to sync
-        char pktMode = (char)MessageType::FILESYNC;
+        unsigned char pktMode = (unsigned char)MessageType::FILESYNC;
         message.messageType = MessageType::FILESYNC;
         haanradPacket += to_string(pktMode);
     }else if(haanradCommand.find("hsuicide") == 0){
         //this is to kill haanrad
-        char pktMode = (char)MessageType::SPCCMD;
+        unsigned char pktMode = (unsigned char)MessageType::SPCCMD;
         message.messageType = MessageType::SPCCMD;
         haanradPacket += to_string(pktMode);
         haanradCommand += " hsuicide";

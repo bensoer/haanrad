@@ -21,6 +21,8 @@ public:
     static bool addAuthSignature(PacketMeta * meta);
 
     static void setPassword(string password);
+
+    static string getPassword();
 };
 
 

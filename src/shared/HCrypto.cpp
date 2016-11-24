@@ -11,9 +11,11 @@
 #include <openssl/rand.h>
 #include <cstring>
 #include <iostream>
+#include <netinet/udp.h>
 #include "openssl/sha.h"
 #include "Structures.h"
 #include "Logger.h"
+#include "PacketIdentifier.h"
 
 HCrypto::~HCrypto() {
     EVP_cleanup();
@@ -146,103 +148,181 @@ void HCrypto::setCryptBufferSize(int buffersize) {
 
 bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
 
-    if(meta->applicationType == ApplicationType::TLS){
-        Logger::debug("HCrypto:encryptPacket - Packet is A TLS Packet");
+    if(meta->applicationType != ApplicationType::UNKNOWN){
 
-        struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
-        char * payload = applicationLayer + sizeof(struct TLS_HEADER);
+        if(meta->applicationType == ApplicationType::TLS){
+            Logger::debug("HCrypto:encryptPacket - Packet is A TLS Packet");
 
-        Logger::debug("HCrypto:encryptPacket - Payload Being Encrypted Is: >" + string(payload) + "<");
-        //cout << ">" << payload << "< " << endl;
+            struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+            char * payload = applicationLayer + sizeof(struct TLS_HEADER);
 
-        EVP_CIPHER_CTX *ctx;
-        unsigned char iv[17];
-        memset(iv, 65, 16);
-        RAND_bytes(iv, 16);
-        iv[16] = '\0';
+            Logger::debug("HCrypto:encryptPacket - Payload Being Encrypted Is: >" + string(payload) + "<");
+            //cout << ">" << payload << "< " << endl;
 
-        Logger::debugl("HCrypto: vector: >");
-        Logger::debugr(iv, 17);
-        Logger::debug("<");
+            EVP_CIPHER_CTX *ctx;
+            unsigned char iv[17];
+            memset(iv, 65, 16);
+            RAND_bytes(iv, 16);
+            iv[16] = '\0';
 
-        //Logger::debug("HCrypto:encryptPacket - The IV Is Initialized To: >" + string((char *)iv) + "<");
+            Logger::debugl("HCrypto: vector: >");
+            Logger::debugr(iv, 17);
+            Logger::debug("<");
 
-        unsigned char ciphertext[this->cryptBufferSize];
-        memset(ciphertext, 0, this->cryptBufferSize);
+            //Logger::debug("HCrypto:encryptPacket - The IV Is Initialized To: >" + string((char *)iv) + "<");
 
-        int len;
-        int ciphertext_len = 0;
+            unsigned char ciphertext[this->cryptBufferSize];
+            memset(ciphertext, 0, this->cryptBufferSize);
 
-        /* Create and initialise the context */
-        if(!(ctx = EVP_CIPHER_CTX_new())){
-            Logger::debug("HCrypto:encryptPacket - There was an error encrypting the Payload");
-            return false;
+            int len;
+            int ciphertext_len = 0;
+
+            /* Create and initialise the context */
+            if(!(ctx = EVP_CIPHER_CTX_new())){
+                Logger::debug("HCrypto:encryptPacket - There was an error encrypting the Payload");
+                return false;
+            }else{
+                Logger::debug("HCrypto:encryptPacket - Successfully Initialized Context");
+            }
+
+            /* Initialise the encryption operation. IMPORTANT - ensure you use a key
+             * and IV size appropriate for your cipher
+             * In this example we are using 256 bit AES (i.e. a 256 bit key). The
+             * IV size for *most* modes is the same as the block size. For AES this
+             * is 128 bits */
+            if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
+                Logger::debug("HCrypto:encryptPacket - There Was An Error Initializing The Encryption Procedure");
+                return false;
+            }else{
+                Logger::debug("HCrypto:encryptPacket - Successfully Initialized The Encryption Procedure");
+            }
+
+            /* Provide the message to be encrypted, and obtain the encrypted output.
+             * EVP_EncryptUpdate can be called multiple times if necessary
+             */
+            if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, (unsigned char *)payload, (int) strlen(payload))){
+                Logger::debug("HCrypto:encryptPacket - There Was An Error Updating Encryption Variables");
+                return false;
+            }else{
+                Logger::debug("HCrypto:encryptPacket - Successfully Updated Encryption Variables");
+
+            }
+
+            ciphertext_len = len;
+
+            /* Finalise the encryption. Further ciphertext bytes may be written at
+             * this stage.
+             */
+            if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)){
+                Logger::debug("HCrypto:encryptPacket - There Was An Error Finalizing Encryption Variables");
+                return false;
+            }else{
+                Logger::debug("HCrypto:encryptPacket - Successfully Finalized Encryption Variables");
+            }
+
+            ciphertext_len += len;
+
+            Logger::debug("HCrypto:encryptPacket - CipherText Length: " + to_string(ciphertext_len));
+            Logger::debugl("CipherText: ");
+            Logger::debugr(ciphertext, ciphertext_len);
+
+            memcpy(payload, iv, 16);
+            payload = payload + 16;
+            memcpy(payload, ciphertext, ciphertext_len);
+            payload[ciphertext_len] = '\0';
+
+            Logger::debug("HCrypto:encryptPacket - Setting Length To: " + to_string(ciphertext_len + 16));
+            tls->length = htons((ciphertext_len + 16));
+
+            Logger::debugl("CipherText (copied to payload): >");
+            payload = payload - 16;
+            Logger::debugl(payload);
+            Logger::debug("<");
+
+
+            /* Clean up */
+            EVP_CIPHER_CTX_free(ctx);
+
+            return true;
+
+        }else if(meta->applicationType == ApplicationType::DNS){
+            Logger::debug("HCrypto:encryptPacket - Packet Is A DNS Packet");
+
+            //DNS will use a caesar cipher using the password length as an offset
+            if(applicationLayer == nullptr){
+                Logger::debug("HCrypto:encryptPacket - Unable To Get Application Layer For DNS Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
+
+            char dnsID[2];
+            memcpy(&dnsID, &dns->id,2);
+
+            dnsID[0] += this->plainKey.length();
+            dnsID[1] += this->plainKey.length();
+
+            memcpy(&dns->id, &dnsID, 2);
+
+            return true;
+
         }else{
-            Logger::debug("HCrypto:encryptPacket - Successfully Initialized Context");
-        }
-
-        /* Initialise the encryption operation. IMPORTANT - ensure you use a key
-         * and IV size appropriate for your cipher
-         * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-         * IV size for *most* modes is the same as the block size. For AES this
-         * is 128 bits */
-        if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
-            Logger::debug("HCrypto:encryptPacket - There Was An Error Initializing The Encryption Procedure");
+            Logger::debug("HCrypto:encryptPacket - Unable To Determine Application Type. Could Not Encrypt");
             return false;
-        }else{
-            Logger::debug("HCrypto:encryptPacket - Successfully Initialized The Encryption Procedure");
         }
+    }else{
+        //its in the transport layer
 
-        /* Provide the message to be encrypted, and obtain the encrypted output.
-         * EVP_EncryptUpdate can be called multiple times if necessary
-         */
-        if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, (unsigned char *)payload, (int) strlen(payload))){
-            Logger::debug("HCrypto:encryptPacket - There Was An Error Updating Encryption Variables");
+        if(meta->transportType == TransportType::TCP){
+            Logger::debug("HCryptor:encryptPacket - Packet Is A TCP Packet");
+
+            //TCP is a CaesarCipher using the password length as an offset
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            if(transportLayer == nullptr){
+                Logger::debug("HCrypto:encryptPacket - Unable To Get Transport Layer For TCP Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct tcphdr * tcp = (struct tcphdr *)transportLayer;
+
+            //set tcp payload
+            char sequenceNumber[4];
+            memcpy(&sequenceNumber, &tcp->seq, 4);
+
+            //encrypt the last two
+            sequenceNumber[2] += this->plainKey.length();
+            sequenceNumber[3] += this->plainKey.length();
+
+            memcpy(&tcp->seq, &sequenceNumber, 4);
+
+            return true;
+
+        }else if(meta->transportType == TransportType::UDP){
+            Logger::debug("HCrypto:encryptPacket - Packet Is A UDP Packet");
+
+            //UDP is a CaesarCipher using the password length and destination port as an offset
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            if(transportLayer == nullptr){
+                Logger::debug("HCrypto:encryptPacket - Unable To Get Transport Layer For UDP Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct udphdr * udp = (struct udphdr *)transportLayer;
+
+            char sourcePort[2];
+            memcpy(&sourcePort, &udp->source, 2);
+
+            sourcePort[1] += (this->plainKey.length() + ntohs(udp->uh_dport));
+
+            memcpy(&udp->source, &sourcePort, 2);
+
+            return true;
+
+        }else{
+            Logger::debug("HCrypto:encryptPacket - Unable To Determine Transport Type. Could Not Encrypt");
             return false;
-        }else{
-            Logger::debug("HCrypto:encryptPacket - Successfully Updated Encryption Variables");
-
         }
-
-        ciphertext_len = len;
-
-        /* Finalise the encryption. Further ciphertext bytes may be written at
-         * this stage.
-         */
-        if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)){
-            Logger::debug("HCrypto:encryptPacket - There Was An Error Finalizing Encryption Variables");
-            return false;
-        }else{
-            Logger::debug("HCrypto:encryptPacket - Successfully Finalized Encryption Variables");
-        }
-
-        ciphertext_len += len;
-
-        Logger::debug("HCrypto:encryptPacket - CipherText Length: " + to_string(ciphertext_len));
-        Logger::debugl("CipherText: ");
-        Logger::debugr(ciphertext, ciphertext_len);
-
-        memcpy(payload, iv, 16);
-        payload = payload + 16;
-        memcpy(payload, ciphertext, ciphertext_len);
-        payload[ciphertext_len] = '\0';
-
-        Logger::debug("HCrypto:encryptPacket - Setting Length To: " + to_string(ciphertext_len + 16));
-        tls->length = htons((ciphertext_len + 16));
-
-        Logger::debugl("CipherText (copied to payload): >");
-        payload = payload - 16;
-        Logger::debugl(payload);
-        Logger::debug("<");
-
-
-        /* Clean up */
-        EVP_CIPHER_CTX_free(ctx);
-
-        return true;
-
     }
-
-
-
 }

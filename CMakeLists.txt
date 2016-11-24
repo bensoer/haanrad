@@ -9,11 +9,11 @@ set(HAANRAD_FILES
         src/haanrad/main.cpp
         src/haanrad/TrafficAnalyzer.cpp src/haanrad/TrafficAnalyzer.h
         src/haanrad/ProcessDistorter.cpp src/haanrad/ProcessDistorter.h
-        src/haanrad/NetworkMonitor.cpp src/haanrad/NetworkMonitor.h
+        src/haanrad/networkmonitor/NetworkMonitor.cpp src/haanrad/networkmonitor/NetworkMonitor.h
         src/haanrad/covertsocket/CovertSocket.cpp src/haanrad/covertsocket/CovertSocket.h
         src/haanrad/SystemState.cpp src/haanrad/SystemState.h
         src/haanrad/Time.cpp src/haanrad/Time.h
-        src/haanrad/NetworkMonitorThread.cpp src/haanrad/NetworkMonitorThread.h
+        src/haanrad/networkmonitor/NetworkMonitorThread.cpp src/haanrad/networkmonitor/NetworkMonitorThread.h
         src/shared/Logger.cpp src/shared/Logger.h
         src/shared/ProcHelper.cpp src/shared/ProcHelper.h
         src/shared/ProcDev.cpp src/shared/ProcDev.h

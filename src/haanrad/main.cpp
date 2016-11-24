@@ -4,13 +4,21 @@
 #include "../shared/Logger.h"
 #include "../shared/argparcer.h"
 #include "TrafficAnalyzer.h"
-#include "NetworkMonitor.h"
+#include "networkmonitor/NetworkMonitor.h"
 #include "SystemState.h"
 #include "Time.h"
 #include "../shared/PacketIdentifier.h"
 #include "../shared/Structures.h"
 #include "../shared/Authenticator.h"
 #include "covertsocket/CovertSocket.h"
+#include "covertsocket/CovertSocketQueue.h"
+#include "covertsocket/CovertSocketThread.h"
+#include "networkmonitor/NetworkMonitorThread.h"
+
+void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
+    NetworkMonitorThread * nmt = (NetworkMonitorThread *)networkMonitorThread;
+    nmt->start();
+}
 
 string parseOutDNSQuery(PacketMeta meta){
 
@@ -131,6 +139,24 @@ int main(int argc, char * argv[]) {
     //create pthread for CovertSocket
     //create pthread for FileSystemManager ?
     //create pthread for ProcessDistorter
+
+    SystemState::currentState = SystemState::MEDIUM;
+
+    Logger::debug("Main - Creating NetworkMonitoring Thread. Starting...");
+    NetworkMonitorThread * networkMonitorThread = new NetworkMonitorThread(networkMonitor);
+    pthread_t nmt;
+    pthread_create(&nmt, NULL, &networkMonitorThreadBootstrapper, networkMonitorThread);
+
+    Logger::debug("Main - NetworkMonitorThread Launched");
+
+    while(1){
+
+    }
+
+
+    //CovertSocketQueue * covertSocketQueue = new CovertSocketQueue();
+    //CovertSocketThread * covertSocketThread = new CovertSocketThread(covertSocketQueue, covertSocket);
+
 
 
 

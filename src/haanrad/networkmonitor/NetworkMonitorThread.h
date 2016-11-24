@@ -19,8 +19,21 @@
 //and then tell it to execute ? SystemState needs to be able to set a variable in the NetworkMonitorThread that would
 //cause the NetworkMonitor to immediately stop. This could terminate the thread but still keep the NetworkMonitor instance
 
+#include "NetworkMonitor.h"
+
 class NetworkMonitorThread {
 
+private:
+
+    bool keepRunning = true;
+    NetworkMonitor * networkMonitor;
+
+public:
+
+    NetworkMonitorThread(NetworkMonitor * networkMontor);
+
+    void start();
+    void stop();
 };
 
 

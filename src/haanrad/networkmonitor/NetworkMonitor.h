@@ -17,9 +17,9 @@
 //NetworkMonitor also is in charge of ensuring a complete message is received and authenticated from the client as messages
 //may arrive out of order, encrypted, and not all in one packet - maybe not even the same kind of packet ?
 
-#include "TrafficAnalyzer.h"
-#include "../shared/HCrypto.h"
-#include "SystemState.h"
+#include "../TrafficAnalyzer.h"
+#include "../../shared/HCrypto.h"
+#include "../SystemState.h"
 #include <iostream>
 #include <pcap.h>
 

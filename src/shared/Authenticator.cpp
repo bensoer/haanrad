@@ -37,6 +37,15 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
                 Logger::debug("Authenticator:isAuthenticPacket - Password Compare: SET >" + Authenticator::password
                               + "< VS. PARSED >" + start + "<");
                 if(start.compare(Authenticator::password) == 0){
+
+                    Logger::debug("Authenticator:isAuthenticPacket - Packet Is Authentic. Removing Password From Payload");
+                    //since it is valid, strip off the password from the payload, leaving only the haanrad packet
+                    string haanradPacket = strPayload.substr(passwordLength);
+                    Logger::debug("Authenticator:isAuthenticPacket - Haanrad Packet Is: >" + haanradPacket + "<");
+                    memcpy(payload, haanradPacket.c_str(), haanradPacket.size());
+                    payload[haanradPacket.length()] = '\0';
+                    Logger::debug("Authenticator:isAuthenticPacket - Payload Now Is: >" + string(payload) + "<");
+
                     return true;
                 }
                 break;

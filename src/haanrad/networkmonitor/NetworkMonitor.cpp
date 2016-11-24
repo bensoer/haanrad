@@ -10,11 +10,11 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include "NetworkMonitor.h"
-#include "../shared/Logger.h"
-#include "../shared/Authenticator.h"
-#include "../shared/PacketIdentifier.h"
-#include "../shared/HCrypto.h"
-#include "../shared/Structures.h"
+#include "../../shared/Logger.h"
+#include "../../shared/Authenticator.h"
+#include "../../shared/PacketIdentifier.h"
+#include "../../shared/HCrypto.h"
+#include "../../shared/Structures.h"
 #include <sys/epoll.h>
 #include <pcap.h>
 #include <cstring>
@@ -70,7 +70,7 @@ bool NetworkMonitor::isFullCommand() {
     //check it starts with {HAAN
     unsigned long length = this->command->length();
     string start = this->command->substr(0,5);
-    string end = this->command->substr(length - 1 - 5, 5);
+    string end = this->command->substr(length - 5, 5);
 
     Logger::debug("NetworkMonitor:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
     if(start.compare("{HAAN")!=0){
@@ -175,7 +175,7 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
     Logger::debug("NetworkMonitor:packetCallback - IP Header Length: " + to_string(ipHeaderLength));
     Logger::debug("NetworkMonitor:packetCallback - Protocol: " + to_string(protocol));
 
-    PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER);
+    PacketMeta meta = PacketIdentifier::generatePacketMeta(BUFFER, pkt_info->len);
     char *applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
 
     if(applicationLayer == nullptr){

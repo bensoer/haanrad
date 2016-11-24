@@ -2,7 +2,7 @@
 // Created by bensoer on 12/11/16.
 //
 
-#include "../../src/haanrad/NetworkMonitor.h"
+#include "../../src/haanrad/networkmonitor/NetworkMonitor.h"
 #include "../../src/shared/Logger.h"
 #include "../../src/shared/HCrypto.h"
 

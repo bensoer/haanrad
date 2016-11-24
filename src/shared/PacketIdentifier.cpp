@@ -173,14 +173,15 @@ bool PacketIdentifier::isTLS(char *applicationLayer) {
     Logger::debug("PacketIdentifier:isTLS - Determining If Packet Is A TLS Packet");
     struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
 
-    Logger::hexDebug(tls->contentType);
-    Logger::debugl(" | ");
-    Logger::hexDebug(tls->type);
-    Logger::debugl(" | ");
-    Logger::hexDebug(tls->length);
-    Logger::debug("");
+    //Logger::hexDebug(tls->contentType);
+    //Logger::debugl(" | ");
+    //Logger::hexDebug(tls->type);
+    //Logger::debugl(" | ");
+    //Logger::hexDebug(tls->length);
+    //Logger::debug("");
 
-    if(tls->contentType == 23 && tls->type == 771 && tls->length > 0){
+    short tlsLength = ntohs(tls->length);
+    if(tls->contentType == 23 && tls->type == 771 && tlsLength > 0){
         Logger::debug("PacketIdentifier:isTLS - Packet Is A TLS Packet");
         return true;
     }

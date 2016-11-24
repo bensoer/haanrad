@@ -3,6 +3,7 @@
 //
 
 #include <netinet/tcp.h>
+#include <cstring>
 #include "Authenticator.h"
 #include "Logger.h"
 #include "PacketIdentifier.h"
@@ -109,16 +110,15 @@ bool Authenticator::addAuthSignature(PacketMeta * meta) {
         switch(meta->applicationType){
             case ApplicationType::ApplicationTypeEnum::TLS:{
 
-                //every TLS packet starts with the password in the body
+                //every TLS packet starts with the password in the body. For TLS, auth needs to be added before encryption
 
                 char * applicationLayer = PacketIdentifier::findApplicationLayer(meta);
                 struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
                 char * payload = applicationLayer + sizeof(struct TLS_HEADER);
                 string strPayload(payload);
 
-                unsigned long passwordLength = Authenticator::password.length();
-
-                Logger::error("Authenticator::addAuthSignature - TLS AUTH ADDING NOT IMPLEMENTED");
+                string signedPayload = Authenticator::password + strPayload;
+                memcpy(payload, signedPayload.c_str(), signedPayload.size());
 
                 break;
             }

@@ -11,7 +11,7 @@
 #include <string>
 
 struct MessageType{
-    enum MessageTypeEnum { DUD = 0x00, CMD = 0x01, FILE = 0x02, CMDANSWER = 0xFE, FILEANSWER = 0xFC,
+    enum MessageTypeEnum { DUD = 0x00, CMD = 0x01, FILE = 0x02, FILESYNC = 0x05, CMDANSWER = 0xFE, FILEANSWER = 0xFC,
         FILEDWNLD = 0x03, SPCCMD = 0x04, INTERCLIENT};
 };
 
@@ -23,8 +23,8 @@ class Message {
 
 public:
     std::string rawCommandMessage;
-    MessageType::MessageTypeEnum messageType;
-    InterClientMessageType::InterClientMessageTypeEnum interMessageCode;
+    MessageType::MessageTypeEnum messageType = MessageType::INTERCLIENT;
+    InterClientMessageType::InterClientMessageTypeEnum interMessageCode = InterClientMessageType::NONE;
     std::string data;
 
 };

@@ -28,14 +28,16 @@ struct DNS_HEADER
     unsigned short add_count; // number of resource entries
 };
 
+//#pragma pack(push, 1)
+#pragma pack(push, 1)
 struct TLS_HEADER
 {
-
     unsigned char contentType;
     unsigned short type;
     unsigned short length;
-
 };
+#pragma pack(pop)
+//#pragma pack(pop)
 
 struct UDP_PSEUDO_HEADER
 {

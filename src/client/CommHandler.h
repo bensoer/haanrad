@@ -41,19 +41,31 @@ private:
 
     static void packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet);
 
+    void sendPacket(string payload);
+
     bool getInterface();
-    void killListening();
+
+    bool continueProcessing = true;
     string parseOutDNSQuery(PacketMeta meta);
 
     bool isValidAuth(PacketMeta meta);
 
+    string haanradIP;
+
+    int rawSocket = -1;
+
+    unsigned short csum(unsigned short *ptr, int nbytes);
+
 public:
+
+    void killListening();
+    void killProcessing();
 
     static CommHandler * getInstance(MessageQueue * messageQueue, HCrypto * crypto);
 
     void listenForMessages();
 
-    long processMessagesToSend();
+    void processMessagesToSend();
 
 };
 

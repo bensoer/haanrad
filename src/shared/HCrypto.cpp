@@ -69,8 +69,9 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
             return false;
         }
 
+        short tlsLength = ntohs(tls->length);
         //check 128 bits of message exists
-        if(16 > tls->length){
+        if(16 > tlsLength){
             Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse IV For Decrypt. Aborting Decryption");
             return false;
         }
@@ -86,14 +87,14 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         Logger::debug("<");
 
         //check there is payload to take out
-        if((tls->length - 16) <= 0){
+        if((tlsLength - 16) <= 0){
             Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse Contents For Decrypt. Aborting Decryption");
             return false;
         }
 
         Logger::debug("HCrypto:decryptPacket - Length Is: " + to_string(tls->length));
         payload += 16;
-        memcpy(&encryptedPayload, payload, (tls->length - 16));
+        memcpy(&encryptedPayload, payload, (tlsLength - 16));
 
         Logger::debugl("HCrypto:decryptPacket - Encrypted Payload >");
         Logger::debugl(encryptedPayload);
@@ -109,7 +110,7 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
             return false;
         }
 
-        if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, encryptedPayload, (tls->length - 16))){
+        if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, encryptedPayload, (tlsLength - 16))){
             Logger::debug("HCrypto:decryptPacket - There Was An Error Decrypting The Payload");
             return false;
         }
@@ -126,7 +127,7 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
         payload -= 16;
         memcpy(payload, plaintext, plaintextLength);
         payload[plaintextLength] = '\0';
-        tls->length = (plaintextLength +1);
+        tls->length = htons(plaintextLength +1);
 
         /* Clean up */
         EVP_CIPHER_CTX_free(ctx);
@@ -227,7 +228,7 @@ bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
         payload[ciphertext_len] = '\0';
 
         Logger::debug("HCrypto:encryptPacket - Setting Length To: " + to_string(ciphertext_len + 16));
-        tls->length = (ciphertext_len + 16);
+        tls->length = htons((ciphertext_len + 16));
 
         Logger::debugl("CipherText (copied to payload): >");
         payload = payload - 16;

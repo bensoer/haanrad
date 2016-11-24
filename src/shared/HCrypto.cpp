@@ -12,6 +12,7 @@
 #include <cstring>
 #include <iostream>
 #include <netinet/udp.h>
+#include <netinet/tcp.h>
 #include "openssl/sha.h"
 #include "Structures.h"
 #include "Logger.h"
@@ -54,88 +55,175 @@ void HCrypto::initialize(string key) {
 
 bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
-    //if its a TLS packet use AES
-    if(meta->applicationType == ApplicationType::TLS){
-        Logger::debug("HCrypto:decryptPacket - Packet is A TLS Packet");
+    if(meta->applicationType != ApplicationType::UNKNOWN){
 
-        struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
-        char * payload = applicationLayer + sizeof(struct TLS_HEADER);
+        //if its a TLS packet use AES
+        if(meta->applicationType == ApplicationType::TLS){
+            Logger::debug("HCrypto:decryptPacket - Packet is A TLS Packet");
 
-        Logger::debugl("HCrypto:decryptPacket - Encrypted Payload Is: >");
-        Logger::debugl(payload);
-        Logger::debug("<");
+            struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+            char * payload = applicationLayer + sizeof(struct TLS_HEADER);
 
-        EVP_CIPHER_CTX * ctx;
-        if(!(ctx = EVP_CIPHER_CTX_new())){
-            Logger::debug("HCrypto:decryptPacket - There Was An Error Creating The Context");
+            Logger::debugl("HCrypto:decryptPacket - Encrypted Payload Is: >");
+            Logger::debugl(payload);
+            Logger::debug("<");
+
+            EVP_CIPHER_CTX * ctx;
+            if(!(ctx = EVP_CIPHER_CTX_new())){
+                Logger::debug("HCrypto:decryptPacket - There Was An Error Creating The Context");
+                return false;
+            }
+
+            short tlsLength = ntohs(tls->length);
+            //check 128 bits of message exists
+            if(16 > tlsLength){
+                Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse IV For Decrypt. Aborting Decryption");
+                return false;
+            }
+
+            //grab first 128 bits of the message contianing the iv
+            unsigned char iv[17];
+            unsigned char encryptedPayload[tls->length - 16];
+            memcpy(&iv, payload, 16);
+            iv[17] = '\0';
+
+            Logger::debugl("HCrypto:decryptPacket - vector: >");
+            Logger::debugl(iv);
+            Logger::debug("<");
+
+            //check there is payload to take out
+            if((tlsLength - 16) <= 0){
+                Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse Contents For Decrypt. Aborting Decryption");
+                return false;
+            }
+
+            Logger::debug("HCrypto:decryptPacket - Length Is: " + to_string(tls->length));
+            payload += 16;
+            memcpy(&encryptedPayload, payload, (tlsLength - 16));
+
+            Logger::debugl("HCrypto:decryptPacket - Encrypted Payload >");
+            Logger::debugl(encryptedPayload);
+            Logger::debug("<");
+
+            unsigned char plaintext[this->cryptBufferSize];
+            memset(plaintext, 0, this->cryptBufferSize);
+            int len;
+            int plaintextLength;
+
+            if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
+                Logger::debug("HCrypto:decryptPacket - There Was An Error Initializing the Decryption");
+                return false;
+            }
+
+            if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, encryptedPayload, (tlsLength - 16))){
+                Logger::debug("HCrypto:decryptPacket - There Was An Error Decrypting The Payload");
+                return false;
+            }
+
+            plaintextLength = len;
+
+            if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)){
+                Logger::debug("HCrypto:decryptPacket - There Was An Error Finalizing Decryption of The Payload");
+                return false;
+            }
+
+            plaintextLength += len;
+
+            payload -= 16;
+            memcpy(payload, plaintext, plaintextLength);
+            payload[plaintextLength] = '\0';
+            tls->length = htons(plaintextLength +1);
+
+            /* Clean up */
+            EVP_CIPHER_CTX_free(ctx);
+
+            return true;
+        }else if(meta->applicationType == ApplicationType::DNS){
+
+            Logger::debug("HCrypto:decryptPacket - Packet Is A DNS Packet");
+
+            //DNS will use a caesar cipher using the password length as an offset
+            if(applicationLayer == nullptr){
+                Logger::debug("HCrypto:decryptPacket - Unable To Get Application Layer For DNS Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
+
+            char dnsID[2];
+            memcpy(&dnsID, &dns->id,2);
+
+            dnsID[0] -= this->plainKey.length();
+            dnsID[1] -= this->plainKey.length();
+
+            memcpy(&dns->id, &dnsID, 2);
+
+            return true;
+
+
+        }else{
+            Logger::debug("HCrypto:decryptPacket - Unable To Determine ApplicationType. Can Not Decrypt");
             return false;
         }
 
-        short tlsLength = ntohs(tls->length);
-        //check 128 bits of message exists
-        if(16 > tlsLength){
-            Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse IV For Decrypt. Aborting Decryption");
+    }else{
+        //its a transport layer
+
+        if(meta->transportType == TransportType::TCP){
+
+            Logger::debug("HCryptor:decryptPacket - Packet Is A TCP Packet");
+
+            //TCP is a CaesarCipher using the password length as an offset
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            if(transportLayer == nullptr){
+                Logger::debug("HCrypto:decryptPacket - Unable To Get Transport Layer For TCP Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct tcphdr * tcp = (struct tcphdr *)transportLayer;
+
+            //set tcp payload
+            char sequenceNumber[4];
+            memcpy(&sequenceNumber, &tcp->seq, 4);
+
+            //encrypt the last two
+            sequenceNumber[2] -= this->plainKey.length();
+            sequenceNumber[3] -= this->plainKey.length();
+
+            memcpy(&tcp->seq, &sequenceNumber, 4);
+
+            return true;
+
+        }else if(meta->transportType == TransportType::UDP){
+
+            Logger::debug("HCrypto:decryptPacket - Packet Is A UDP Packet");
+
+            //UDP is a CaesarCipher using the password length and destination port as an offset
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            if(transportLayer == nullptr){
+                Logger::debug("HCrypto:decryptPacket - Unable To Get Transport Layer For UDP Packet. Can Not Encrypt");
+                return false;
+            }
+
+            struct udphdr * udp = (struct udphdr *)transportLayer;
+
+            char sourcePort[2];
+            memcpy(&sourcePort, &udp->source, 2);
+
+            sourcePort[1] -= (this->plainKey.length() + ntohs(udp->uh_dport));
+
+            memcpy(&udp->source, &sourcePort, 2);
+
+            return true;
+
+        }else{
+            Logger::debug("HCrypto:decryptPacket - Unable To Determine TransportType. Can Not Decrypt");
             return false;
         }
-
-        //grab first 128 bits of the message contianing the iv
-        unsigned char iv[17];
-        unsigned char encryptedPayload[tls->length - 16];
-        memcpy(&iv, payload, 16);
-        iv[17] = '\0';
-
-        Logger::debugl("HCrypto:decryptPacket - vector: >");
-        Logger::debugl(iv);
-        Logger::debug("<");
-
-        //check there is payload to take out
-        if((tlsLength - 16) <= 0){
-            Logger::debug("HCrypto:decryptPacket - Payload Is Not Long Enough To Parse Contents For Decrypt. Aborting Decryption");
-            return false;
-        }
-
-        Logger::debug("HCrypto:decryptPacket - Length Is: " + to_string(tls->length));
-        payload += 16;
-        memcpy(&encryptedPayload, payload, (tlsLength - 16));
-
-        Logger::debugl("HCrypto:decryptPacket - Encrypted Payload >");
-        Logger::debugl(encryptedPayload);
-        Logger::debug("<");
-
-        unsigned char plaintext[this->cryptBufferSize];
-        memset(plaintext, 0, this->cryptBufferSize);
-        int len;
-        int plaintextLength;
-
-        if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, this->cypherkey, iv)){
-            Logger::debug("HCrypto:decryptPacket - There Was An Error Initializing the Decryption");
-            return false;
-        }
-
-        if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, encryptedPayload, (tlsLength - 16))){
-            Logger::debug("HCrypto:decryptPacket - There Was An Error Decrypting The Payload");
-            return false;
-        }
-
-        plaintextLength = len;
-
-        if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)){
-            Logger::debug("HCrypto:decryptPacket - There Was An Error Finalizing Decryption of The Payload");
-            return false;
-        }
-
-        plaintextLength += len;
-
-        payload -= 16;
-        memcpy(payload, plaintext, plaintextLength);
-        payload[plaintextLength] = '\0';
-        tls->length = htons(plaintextLength +1);
-
-        /* Clean up */
-        EVP_CIPHER_CTX_free(ctx);
-
-        return true;
     }
+
 
     return false;
 

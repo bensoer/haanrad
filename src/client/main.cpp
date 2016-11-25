@@ -134,6 +134,7 @@ int main() {
         }
 
         Message message;
+        message.messageType = MessageType::DUD;
         if(checkQueue == true){
             message = queue->recvFromHaanrad();
             checkQueue = false;
@@ -143,6 +144,17 @@ int main() {
         //if the InterClientCode is EMPTY then we know a check occurred (default value is NONE)
         if(message.interMessageCode == InterClientMessageType::EMPTY){
             cout << ":> Check Complete. There Are No Messages From Haanrad" << endl;
+        }else{
+            if(message.interMessageCode == InterClientMessageType::ERROR){
+                cout << ":> An Error Message Was Found. Details: " << message.data << endl;
+            }
+
+            if(message.messageType == MessageType::CMDANSWER){
+                cout << ":> An hexec command has returned. The Results Are:" << endl;
+                cout << ":> ==== Start Of Transmission ====" << endl;
+                cout << ":> " << message.data << endl;
+                cout << ":> ====  End Of Transmission  ====" << endl;
+            }
         }
         //additional checks if something does arrive...
 

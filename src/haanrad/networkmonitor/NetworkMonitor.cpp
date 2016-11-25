@@ -141,6 +141,8 @@ void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
             this->command->append(to_string(content[2]));
             this->command->append(to_string(content[3]));
 
+            break;
+
         }
         case TransportType::UDP:{
 
@@ -155,6 +157,7 @@ void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
 
             this->command->append(to_string(content[1]));
 
+            break;
         }
         default:{
             Logger::debug("NetworkMonitor:parseTransportContent - FATAL ERROR. TRANSPORT TYPE UNKNOWN");

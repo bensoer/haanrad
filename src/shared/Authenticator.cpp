@@ -130,7 +130,7 @@ bool Authenticator::addAuthSignature(PacketMeta * meta) {
                 char * payload = applicationLayer + sizeof(struct TLS_HEADER);
                 string strPayload(payload);
 
-                string signedPayload = Authenticator::password + strPayload;
+                string signedPayload = (Authenticator::password + strPayload);
                 memcpy(payload, signedPayload.c_str(), signedPayload.size());
                 payload[signedPayload.length()] = '\0';
 

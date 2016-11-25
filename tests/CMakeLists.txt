@@ -28,7 +28,8 @@ set(CRYPTO_FILES
         ../src/haanrad/SystemState.cpp ../src/haanrad/SystemState.h
         ../src/shared/ProcDev.h ../src/shared/ProcDev.cpp
         ../src/shared/ProcHelper.h ../src/shared/ProcHelper.cpp
-        ../src/shared/ProcStat.h ../src/shared/ProcStat.cpp)
+        ../src/shared/ProcStat.h ../src/shared/ProcStat.cpp
+        ../src/shared/Authenticator.h ../src/shared/Authenticator.cpp)
 add_executable(test-crypto ${CRYPTO_FILES})
 
 set(SYSSTATE_FILES

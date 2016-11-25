@@ -90,6 +90,19 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET], int l
                 meta.applicationType = ApplicationType::HTTP;
             }else if(PacketIdentifier::isTLS(applicationLayer)){
                 meta.applicationType = ApplicationType::TLS;
+
+                //its TLS. so 0 out the application layer contents
+                unsigned long packetLengthRemaining = 0;
+                if(length > -1){
+                    //packetLengthRemaining = (length - ipHeaderLength - byteOffset - sizeof(struct TLS_HEADER));
+                    packetLengthRemaining = length - (applicationLayer - packet);
+                }else{
+                    //packetLengthRemaining = (IP_MAXPACKET - ipHeaderLength - byteOffset - sizeof(struct TLS_HEADER));
+                    packetLengthRemaining = IP_MAXPACKET - (applicationLayer - packet);
+                }
+
+                memset(applicationLayer + sizeof(struct TLS_HEADER), '\0', packetLengthRemaining);
+
             }else{
                 meta.applicationType = ApplicationType::UNKNOWN;
             }

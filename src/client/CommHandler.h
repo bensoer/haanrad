@@ -56,6 +56,15 @@ private:
 
     unsigned short csum(unsigned short *ptr, int nbytes);
 
+    void parseApplicationContent(PacketMeta * meta, char * applicationLayer);
+    void parseTransportContent(PacketMeta * meta);
+
+    string * command = nullptr;
+
+    bool isFullCommand();
+
+    Message generateMessageFromCommand(string haanradPacket);
+
 public:
 
     void killListening();

@@ -132,6 +132,10 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
 
         while(1){
 
+            if(currentHistory.size() <= 0){
+                continue;
+            }
+
             unsigned int index = rand() % currentHistory.size();
             if(currentHistory.at(index).applicationType == chosenType){
 
@@ -145,6 +149,10 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
         TransportType::TransportTypeEnum chosenType = (TransportType::TransportTypeEnum)highestKey;
 
         while(1){
+
+            if(currentHistory.size() <= 0){
+                continue;
+            }
 
             unsigned int index = rand() % currentHistory.size();
             if(currentHistory.at(index).transportType == chosenType){

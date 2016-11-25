@@ -47,11 +47,10 @@ void CovertSocket::send(string payload) {
 
     //payload = {HAAN 00000000 data HAAN}\0
 
-    PacketMeta meta;
     if(SystemState::currentState == SystemState::STARTUP){
         Logger::debug("CovertSocket:send - STARTUP Mode Detected. Sending Last TrafficAnalyzer Packet To Client");
         //if were in startup we get the last one, otherwise its the best one
-        meta = this->trafficAnalyzer->getLastPacketAdded();
+        PacketMeta meta = this->trafficAnalyzer->getLastPacketAdded();
 
         Logger::debug("CovertSocket:send - Parsing Contents For STARTUP Send");
         char * ptr = meta.packet;
@@ -83,7 +82,8 @@ void CovertSocket::send(string payload) {
         string currentPayload = payload;
 
         while(currentPayload.length() > 0){
-            meta = this->trafficAnalyzer->getBestPacketToSend();
+
+            PacketMeta meta = this->trafficAnalyzer->getBestPacketToSend();
 
             if(meta.applicationType != ApplicationType::UNKNOWN){
                 //application layer solution
@@ -132,7 +132,7 @@ void CovertSocket::send(string payload) {
                         }
 
                         //copy the payload into the TLS body
-                        char * tlsPayload = applicationLayer + sizeof(TLS_HEADER);
+                        char * tlsPayload = (applicationLayer + sizeof(TLS_HEADER));
                         memcpy(tlsPayload, acceptablePortion.c_str(), acceptablePortion.size());
                         tlsPayload[acceptablePortion.length()] = '\0';
 
@@ -141,6 +141,7 @@ void CovertSocket::send(string payload) {
                         this->crypto->encryptPacket(&meta, applicationLayer);
 
                         struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
+
                         ip->tot_len = htons(sizeof(struct ip) + sizeof(struct tcphdr) + sizeof(struct TLS_HEADER) + ntohs(tls->length));
 
                         ip->check = 0;
@@ -169,7 +170,6 @@ void CovertSocket::send(string payload) {
                         }else{
                             dnsPayload = currentPayload.substr(0,2);
                         }
-
 
                         //add auth signature
                         Authenticator::addAuthSignature(&meta);

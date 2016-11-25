@@ -8,6 +8,8 @@
 #include "../../src/shared/PacketIdentifier.h"
 #include "../../src/shared/Structures.h"
 #include "../../src/shared/Logger.h"
+#include "../../src/shared/Authenticator.h"
+#include <netinet/tcp.h>
 
 using namespace std;
 
@@ -22,20 +24,25 @@ int main(int argc, char * argv[]){
     meta->transportType = TransportType::TCP;
     meta->applicationType = ApplicationType::TLS;
 
-    meta->packet;
-    char * applicationLayer = meta->packet;
+    string message =  "{HAAN1jdklsajdklsa";
 
-    unsigned char message[] =  "A completely different but substantialy longer encrypted string. \tn. this might have issues\0";
+    struct iphdr * ip = (struct iphdr *)meta->packet;
+    ip->ihl = 5;
+    struct tcphdr * tcp = (struct tcphdr *)(meta->packet + 20); // 20 byte default header ( 4 * 5)
+    tcp->doff = 5;
+    char * applicationLayer = (meta->packet + 20 + sizeof(tcphdr));
+    struct TLS_HEADER * tls = (struct TLS_HEADER *)(meta->packet + 20 + sizeof(tcphdr));
 
-
-    struct TLS_HEADER * tls = (struct TLS_HEADER * )applicationLayer;
     tls->contentType=23;
     tls->type = 771;
-    tls->length = sizeof(message);
+    tls->length = htons(1);
 
-    char * ptr = applicationLayer + sizeof(struct TLS_HEADER);
+    char * payload = meta->packet + 20 + sizeof(tcphdr) + sizeof(TLS_HEADER);
 
-    memcpy(ptr, message, sizeof(message));
+    memcpy(payload, message.c_str(), message.size());
+
+    Authenticator::setPassword("password");
+    Authenticator::addAuthSignature(meta);
 
     Logger::debug("Creating Crypto Handler");
     HCrypto * crypto = new HCrypto();
@@ -45,7 +52,7 @@ int main(int argc, char * argv[]){
     Logger::debug("Now Decrypting");
     crypto->decryptPacket(meta, applicationLayer);
     Logger::debug("Printing Results");
-    cout << ">" << string(ptr) << "<" << endl;
+    cout << ">" << string(payload) << "<" << endl;
 
     return 0;
 }

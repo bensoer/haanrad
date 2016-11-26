@@ -77,7 +77,7 @@ bool CommHandler::getInterface() {
     Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - Finding All Interfaces");
 
     if(pcap_findalldevs(&interfaces, errbuf) == -1){
-        Logger::error(to_string(getpid()) + " CommHandler:getInterfaces - There Was An Error Fetching The Interfaces");
+        Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - There Was An Error Fetching The Interfaces");
         cerr << errbuf << endl;
         return false;
     }

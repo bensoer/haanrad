@@ -11,6 +11,12 @@
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/TrafficAnalyzer.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/PacketMeta.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManager.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManager.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManagerThread.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManagerQueue.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManagerQueue.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/haanrad/filesystemmanager/FileSystemManagerThread.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/ProcessDistorter.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/Time.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/haanrad/covertsocket/CovertSocketThread.h" isTestSource="false" />

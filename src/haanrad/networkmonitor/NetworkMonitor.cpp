@@ -323,7 +323,7 @@ bool NetworkMonitor::getInterface() {
     Logger::debug("NetworkMontor:getInterfaces - Finding All Interfaces");
 
     if(pcap_findalldevs(&interfaces, errbuf) == -1){
-        Logger::error("NetworkMonitor:getInterfaces - There Was An Error Fetching The Interfaces");
+        Logger::debug("NetworkMonitor:getInterfaces - There Was An Error Fetching The Interfaces");
         cerr << errbuf << endl;
         return false;
     }

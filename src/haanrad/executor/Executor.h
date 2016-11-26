@@ -7,18 +7,23 @@
 
 
 #include "../../client/Message.h"
+#include "../filesystemmanager/FileSystemManagerQueue.h"
 
 class Executor {
 
 private:
 
-    static std::string executeOnConsole(Message message);
+    std::string executeOnConsole(Message message);
+
+    FileSystemManagerQueue * fileSystemManagerQueue;
 
 public:
 
+    Executor(FileSystemManagerQueue * fileSystemManagerQueue);
+
     static Message formatCommand(std::string haanradPacket);
 
-    static std::string execute(Message message);
+    std::string execute(Message message);
 };
 
 

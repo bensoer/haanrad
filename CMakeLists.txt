@@ -22,7 +22,7 @@ set(HAANRAD_FILES
         src/shared/Structures.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
-        src/shared/argparcer.h src/haanrad/covertsocket/CovertSocketThread.cpp src/haanrad/covertsocket/CovertSocketThread.h src/haanrad/covertsocket/CovertSocketQueue.cpp src/haanrad/covertsocket/CovertSocketQueue.h src/haanrad/executor/Executor.cpp src/haanrad/executor/Executor.h src/haanrad/executor/ExecutorQueue.cpp src/haanrad/executor/ExecutorQueue.h)
+        src/shared/argparcer.h src/haanrad/covertsocket/CovertSocketThread.cpp src/haanrad/covertsocket/CovertSocketThread.h src/haanrad/covertsocket/CovertSocketQueue.cpp src/haanrad/covertsocket/CovertSocketQueue.h src/haanrad/executor/Executor.cpp src/haanrad/executor/Executor.h src/haanrad/executor/ExecutorQueue.cpp src/haanrad/executor/ExecutorQueue.h src/haanrad/filesystemmanager/FileSystemManager.cpp src/haanrad/filesystemmanager/FileSystemManager.h src/haanrad/filesystemmanager/FileSystemManagerQueue.cpp src/haanrad/filesystemmanager/FileSystemManagerQueue.h src/haanrad/filesystemmanager/FileSystemManagerThread.cpp src/haanrad/filesystemmanager/FileSystemManagerThread.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
 set(CLIENT_FILES

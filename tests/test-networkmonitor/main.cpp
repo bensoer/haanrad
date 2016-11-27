@@ -15,7 +15,7 @@ int main(int argc, char * argv[]){
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(10);
     HCrypto * crypto = new HCrypto();
     crypto->initialize("password");
-    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto);
+    NetworkMonitor * monitor = NetworkMonitor::getInstance(analyzer,crypto, "127.0.0.1");
 
     string * command = monitor->listenForTraffic();
 

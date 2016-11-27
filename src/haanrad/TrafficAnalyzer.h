@@ -13,6 +13,7 @@
 
 #include <netinet/ip.h>
 #include <deque>
+#include <mutex>
 #include "PacketMeta.h"
 
 using namespace std;
@@ -21,8 +22,12 @@ class TrafficAnalyzer {
 
 private:
 
+    std::mutex historyLock;
+    std::mutex addPacketLock;
+
+
     deque<time_t> * timestamps = nullptr;
-    deque<deque<PacketMeta>> * data = nullptr;
+    deque<PacketMeta> * data = nullptr;
     int historyLength;
 
 

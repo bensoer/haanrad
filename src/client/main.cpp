@@ -1,11 +1,36 @@
 #include <iostream>
 #include <cstring>
+#include <csignal>
+#include <stdlib.h>
 #include "MessageQueue.h"
 #include "CommHandler.h"
 #include "../shared/Logger.h"
 #include "../shared/HCrypto.h"
 #include "LocalFileManager.h"
 
+CommHandler * globalCommHandler = nullptr;
+
+pthread_t listenerThread;
+pthread_t senderThread;
+
+bool keepRunning = true;
+
+void shutdownClient(int signo){
+
+    cout << ":> ==== Shutting Down Client ====" << endl;
+
+    if(globalCommHandler == nullptr){
+        cout << ":> Unable To Shutdown Gracefuly. Forcing" << endl;
+        exit(1);
+    }else{
+        keepRunning = false;
+        globalCommHandler->killListening();
+        globalCommHandler->killProcessing();
+    }
+
+
+
+}
 
 void * listenBootstrapper(void * commHandlerListener){
     CommHandler * listener = (CommHandler *)commHandlerListener;
@@ -74,6 +99,16 @@ int main() {
     cout << "==== Initializing Haanrad Console ====" << endl;
     //Logger::setDebug(true);
 
+
+    //register listening for kill commands.
+    struct sigaction act;
+    act.sa_handler = shutdownClient;
+    act.sa_flags = 0;
+    if(sigemptyset(&act.sa_mask) == -1 || sigaction(SIGINT, &act, NULL) == -1){
+        Logger::debug("Main - Failed To Set Ctrl+C Interrupt Handler");
+        return 1;
+    }
+
     //Create MessageQueue
     MessageQueue * queue = new MessageQueue();
     HCrypto * crypto = new HCrypto();
@@ -81,9 +116,7 @@ int main() {
     //Create CommHandler
     // - Pass MessageQueue
     CommHandler * commHandler = CommHandler::getInstance(queue, crypto);
-
-    pthread_t listenerThread;
-    pthread_t senderThread;
+    globalCommHandler = commHandler;
 
     pthread_create(&listenerThread, NULL, &listenBootstrapper, commHandler);
     pthread_create(&senderThread, NULL, &sendBootstrapper, commHandler);
@@ -106,7 +139,7 @@ int main() {
     bool promptedHelp = false;
     bool checkQueue = false;
 
-    while(haanradConnected == false){
+    while(haanradConnected == false && keepRunning == true){
         Message message = queue->recvFromHaanrad();
 
         if(message.interMessageCode != InterClientMessageType::EMPTY){
@@ -126,11 +159,29 @@ int main() {
         }
     }
 
+    if(keepRunning == false){
+
+        pthread_join(listenerThread, NULL);
+        pthread_join(senderThread, NULL);
+
+        cout << "==== Shutdown Successful. Cleaning up Resources ====" << endl;
+
+        delete(queue);
+        queue = nullptr;
+        delete(crypto);
+        crypto = nullptr;
+        delete(commHandler);
+        commHandler = nullptr;
+
+        cout << "==== Cleanup Complete. Terminating ====" << endl;
+        return 0;
+    }
+
     LocalFileManager * lfm = new LocalFileManager(syncDirectory);
     string haanradPath = "";
 
     //at this point haanrad has connected and interactive mode is possible
-    while(1){
+    while(keepRunning){
 
         if(promptedHelp == false){
             cout << ":> Interactivity Has Been Enabled. The Following KeyWords Are Available:" << endl;
@@ -206,7 +257,18 @@ int main() {
         cout << ":> ";
         fgets(BUFFER, BUFFERLEN, stdin);
         string command(BUFFER);
-        command.erase(command.length() - 1); //remove the \n character
+        if(command.length() > 0){
+            command.erase(command.length() - 1); //remove the \n character
+        }
+
+        if(keepRunning == false){
+            break;
+        }
+
+        if(command.find("exit")==0){
+            shutdownClient(0);
+            break;
+        }
 
         if(command.find("send") != 0 && command.find("check") != 0 && command.find("buf") != 0){
             cout << ":> Invalid Command Entered. Cannot Process" << endl;
@@ -251,9 +313,24 @@ int main() {
             commHandler->clearCommandBuffer();
             cout << ":> Clear Comm Handler Buffer Complete" << endl;
         }
-
-
     }
+
+    //wait for the children!
+    pthread_join(listenerThread, NULL);
+    pthread_join(senderThread, NULL);
+
+    cout << "==== Shutdown Successful. Cleaning up Resources ====" << endl;
+
+    delete(queue);
+    queue = nullptr;
+    delete(crypto);
+    crypto = nullptr;
+    delete(commHandler);
+    commHandler = nullptr;
+    delete(lfm);
+    lfm = nullptr;
+
+    cout << "==== Cleanup Complete. Terminating ====" << endl;
 
     return 0;
 }

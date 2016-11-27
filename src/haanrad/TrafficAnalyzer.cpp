@@ -15,8 +15,8 @@
 
 TrafficAnalyzer::TrafficAnalyzer(int historyLength) {
 
-    this->data = new deque<deque<PacketMeta>>();
-    this->data->push_back(deque<PacketMeta>());
+    this->data = new deque<PacketMeta>();
+    //this->data->push_back(deque<PacketMeta>());
 
     this->historyLength = historyLength;
 
@@ -29,34 +29,39 @@ TrafficAnalyzer::TrafficAnalyzer(int historyLength) {
 }
 
 void TrafficAnalyzer::addPacketMetaToHistory(PacketMeta packet) {
-
-    deque<PacketMeta> currentHistory = this->data->back(); //back returns a reference to the last item
+    this->addPacketLock.lock();
+    //deque<PacketMeta> currentHistory = this->data->back(); //back returns a reference to the last item
     Logger::debug("TrafficAnalyzer:addPacketMetaToHistory - Adding Packet To History. Current History Holds: "
-                  + to_string(currentHistory.size()) + " Entries");
-    currentHistory.push_back(packet);
+                  + to_string(this->data->size()) + " Entries");
+    this->data->push_back(packet);
     Logger::debug("TrafficAnalyzer:addPacketMetaToHistory - Packet Entry Added. History Now Holds: "
-                  + to_string(currentHistory.size()) + " Entries");
+                  + to_string(this->data->size()) + " Entries");
 
-    this->data->emplace_back(currentHistory);
+    //this->data->emplace_back(currentHistory);
 
-    if(currentHistory.size() >= 100){
+
+    if(this->data->size() >= 100){
         Logger::debug("TrafficAnalyzer:addPacketMetaToHistory - History Contains 100 or More Packets. Creating New Time Segment");
-        this->setNewTimeSegment();
+        this->data->pop_front();
     }
+
+    this->addPacketLock.unlock();
+
 
 }
 
 void TrafficAnalyzer::setNewTimeSegment() {
     Logger::debug("TrafficAnalyzer:setNewTimeSegment - Setting New Time Segment");
 
-    unsigned long dataLength = this->data->size();
+    /*unsigned long dataLength = this->data->size();
     if(dataLength + 1 > this->historyLength){
-        deque<PacketMeta> previousHistory = this->data->front();
-        previousHistory.clear();
-        this->data->pop_front();
+        //deque<PacketMeta> previousHistory = this->data->front();
+        //previousHistory.clear();
+        //this->data->pop_front();
+        this->data->clear();
 
-    }
-    this->data->push_back(deque<PacketMeta>());
+    }*/
+    //this->data->push_back(deque<PacketMeta>());
 
     unsigned long timestampLength = this->timestamps->size();
     if(timestampLength + 1 > this->historyLength){
@@ -70,8 +75,13 @@ void TrafficAnalyzer::setNewTimeSegment() {
 }
 
 PacketMeta TrafficAnalyzer::getBestPacketToSend() {
+    //this->historyLock.lock();
 
-    deque<PacketMeta> currentHistory = this->data->back();
+    //deque<PacketMeta> currentHistory = this->data->back();
+
+    this->addPacketLock.lock();
+    deque<PacketMeta> historySnapshot((*this->data));
+    this->addPacketLock.unlock();
 
     long dnsPackets = 0;
     long tlsPackets = 0;
@@ -84,7 +94,7 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
     counts.insert(pair<int, long>(TransportType::UDP, 0));
     counts.insert(pair<int, long>(TransportType::TCP, 0));
 
-    for_each(currentHistory.begin(), currentHistory.end(), [&counts] (PacketMeta meta){
+    for_each(historySnapshot.begin(), historySnapshot.end(), [&counts] (PacketMeta meta){
 
         if(meta.applicationType != ApplicationType::UNKNOWN){
             switch(meta.applicationType){
@@ -136,16 +146,16 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
 
         while(1){
 
-            if(currentHistory.size() <= 0){
+            if(this->data->size() <= 0){
+                Logger::debug("TrafficAnalyzer:getBestPAcketToSend - The Storage Is Empty!. Waiting To Try Again");
                 continue;
             }
 
-            unsigned int index = rand() % currentHistory.size();
-            if(currentHistory.at(index).applicationType == chosenType){
-
-                return currentHistory.at(index);
+            unsigned int index = (rand() % historySnapshot.size());
+            if(this->data->at(index).applicationType == chosenType){
+                PacketMeta meta = this->data->at(index);
+                return meta;
             }
-
         }
 
     }else{
@@ -155,16 +165,16 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
 
         while(1){
 
-            if(currentHistory.size() <= 0){
+            if(this->data->size() <= 0){
+                Logger::debug("TrafficAnalyzer:getBestPacketToSend - The Storage Is Empty!. Waiting To Try Again");
                 continue;
             }
 
-            unsigned int index = rand() % currentHistory.size();
-            if(currentHistory.at(index).transportType == chosenType && currentHistory.at(index).applicationType == ApplicationType::UNKNOWN){
-
-                return currentHistory.at(index);
+            unsigned int index = (rand() % historySnapshot.size());
+            if(this->data->at(index).transportType == chosenType && this->data->at(index).applicationType == ApplicationType::UNKNOWN){
+                PacketMeta meta = this->data->at(index);
+                return meta;
             }
-
         }
 
     }
@@ -172,6 +182,5 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
 
 PacketMeta TrafficAnalyzer::getLastPacketAdded() {
     Logger::debug("TrafficAnalyzer:getLastPacketAdded - Fetching Last Packet Added To TrafficAnalyser");
-    deque<PacketMeta> currentHistory = this->data->back();
-    return currentHistory.back();
+    return this->data->back();
 }

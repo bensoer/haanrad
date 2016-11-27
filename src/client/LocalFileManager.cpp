@@ -52,10 +52,15 @@ void LocalFileManager::buildOutDirectory(std::string haanradDir) {
             cout << "Making Directory: " << pathUpToCurrentSlash << endl;
             mkdir(pathUpToCurrentSlash.c_str(), 0777);
 
-            fullDirCopy = fullDirCopy.substr(index+1);
+            fullDirCopy = fullDirCopy.substr(index + 1);
             offsetValue += (index + 1);
         }
 
+    }
+
+    if(fullDirCopy.length() > 0){
+        //make the last part folder
+        mkdir(fullDir.c_str(), 0777);
     }
 }
 
@@ -68,10 +73,12 @@ void LocalFileManager::syncFile(std::string haanradDir, string rawData) {
     }
 
     std::string directory = haanradDir.substr(0, index);
+    std::string fileName = haanradDir.substr(index + 1);
+    std::string fullDir = this->syncRootDir + "/" + directory + "/" + fileName;
 
-    ofstream writer;
-    writer.open(directory, ios::out | ios::binary);
-    writer.write(rawData.c_str(), rawData.size());
+    ofstream writer(fullDir.c_str(), ios::out| ios::binary);
+    //writer.open(fullDir.c_str(), ios::out | ios::binary);
+    writer.write(rawData.c_str(), rawData.length());
     writer.close();
 
 }

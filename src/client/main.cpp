@@ -189,9 +189,8 @@ int main() {
                 string fullPath = syncDirectory + "/" + haanradPath;
                 cout << ":> A file Download Has Been Detected. Will Write To PreConfigured Location (" << fullPath
                      << ")" << endl;
-                string rawData = message.data.substr(6, message.data.length() - 6 - 5 - 1);
                 cout << ":> Writing Is Starting ..." << endl;
-                lfm->syncFile(haanradPath, rawData);
+                lfm->syncFile(haanradPath, message.data);
                 cout << ":> Writing Has Completed" << endl;
             }
         }

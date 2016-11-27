@@ -67,6 +67,10 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
             payload[ntohs(tls->length)] = '\0';
 
+            for(int i = 0; i < ntohs(tls->length); i++){
+                payload[i] -= this->plainKey.length();
+            }
+
             //tls->length = htons(ntohs(tls->length) + 1);
 
 
@@ -265,6 +269,11 @@ bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
             struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;
             char * payload = applicationLayer + sizeof(struct TLS_HEADER);
             string strPayload(payload);
+
+            for(int i = 0; i < strPayload.length(); i++){
+                payload[i] += this->plainKey.length();
+            }
+
             tls->length = htons(strPayload.size());
 
             /*struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;

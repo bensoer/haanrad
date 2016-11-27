@@ -21,6 +21,8 @@ CommHandler::CommHandler(MessageQueue * messageQueue, HCrypto * crypto) {
     this->messageQueue = messageQueue;
     this->crypto = crypto;
 
+    this->command = new string("");
+
     if(!getInterface()){
         Logger::debug(to_string(getpid()) + " CommHandler - There Was An Error Fetching The Interface For The Monitor");
     }
@@ -676,21 +678,38 @@ bool CommHandler::isFullCommand() {
     //check it starts with {HAAN
     unsigned long length = this->command->length();
     string start = this->command->substr(0,5);
-    string end = this->command->substr(length - 5 - 1, 5);
 
-    Logger::debug("CommHandler:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
+    int index = this->command->find("HAAN}");
+    if(index == string::npos){
+        Logger::debug("CommHandler:isFullCommand - Could Not Find HAAN} Endtag. Got npos");
+        return false;
+    }else{
+        Logger::debug("CommHandler:isFullCommand - Found HAAN} Entag.");
+    }
+
+    //string end = this->command->substr(length - 6, 5);
+
+    //Logger::debug("CommHandler:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
     if(start.compare("{HAAN")!=0){
         cout << "Doesn't Start with {HAAN. Starts with: >" << start << "<" << endl;
         return false;
     }
 
     //check it ends with HAAN}
-    if(end.compare("HAAN}")!= 0){
+    /*if(end.compare("HAAN}")!= 0){
         cout << "Doesn't End With HAAN}. Ends with: >" << end << "<" << endl;
         return false;
-    }
+    }*/
 
     return true;
+}
+
+string* CommHandler::getCommandBuffer() {
+    return this->command;
+}
+
+void CommHandler::clearCommandBuffer() {
+    this->command->clear();
 }
 
 /**

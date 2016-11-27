@@ -21,7 +21,7 @@ Message FileSystemManagerQueue::getFileMessage() {
         message.messageType = MessageType::INTERCLIENT;
         message.interMessageCode = InterClientMessageType::EMPTY;
 
-        this->lock.lock();
+        this->lock.unlock();
         return message;
     }else{
 

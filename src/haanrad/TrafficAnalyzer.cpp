@@ -51,7 +51,10 @@ void TrafficAnalyzer::setNewTimeSegment() {
 
     unsigned long dataLength = this->data->size();
     if(dataLength + 1 > this->historyLength){
+        deque<PacketMeta> previousHistory = this->data->front();
+        previousHistory.clear();
         this->data->pop_front();
+
     }
     this->data->push_back(deque<PacketMeta>());
 
@@ -129,6 +132,7 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
     if(highestKey > 17){
         //then its an application layer
         ApplicationType::ApplicationTypeEnum chosenType = (ApplicationType::ApplicationTypeEnum)highestKey;
+        counts.clear();
 
         while(1){
 
@@ -147,6 +151,7 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
     }else{
         //then its a transport layer
         TransportType::TransportTypeEnum chosenType = (TransportType::TransportTypeEnum)highestKey;
+        counts.clear();
 
         while(1){
 
@@ -155,7 +160,7 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
             }
 
             unsigned int index = rand() % currentHistory.size();
-            if(currentHistory.at(index).transportType == chosenType){
+            if(currentHistory.at(index).transportType == chosenType && currentHistory.at(index).applicationType == ApplicationType::UNKNOWN){
 
                 return currentHistory.at(index);
             }

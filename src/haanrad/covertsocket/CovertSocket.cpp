@@ -228,7 +228,11 @@ void CovertSocket::send(string payload) {
                         }
 
                         //reset current payload
-                        currentPayload = currentPayload.substr(2);
+                        if(currentPayload.length() < 2){
+                            currentPayload = "";
+                        }else{
+                            currentPayload = currentPayload.substr(2);
+                        }
                         break;
 
                     }
@@ -333,10 +337,14 @@ void CovertSocket::send(string payload) {
                             return;
                         }
 
+                        int iphdr_length = (ip->ihl * 4);
+                        struct udphdr * udp = (struct udphdr *)(ptr+ iphdr_length);
+
+                        string udpSource1 = to_string(ntohs(udp->source));
+
+
                         //get tcp and blank checksums for recalculation
-                        struct udphdr * udp = (struct udphdr *)transportLayer;
-                        udp->check = 0;
-                        udp->uh_sum = 0;
+                        //struct udphdr * udp = (struct udphdr *)transportLayer;
 
                         //set tcp payload
                         char sourcePort[2];
@@ -344,13 +352,20 @@ void CovertSocket::send(string payload) {
                         sourcePort[1] = udpPayload[0];
                         memcpy(&udp->source, &sourcePort, 2);
 
+                        string udpSource2 = to_string(ntohs(udp->source));
+
                         this->crypto->encryptPacket(&meta, PacketIdentifier::findApplicationLayer(&meta));
+
+                        string udpSource3 = to_string(ntohs(udp->source));
 
                         //create sockaddr_in for sendto
                         struct sockaddr_in sin;
                         sin.sin_family = AF_INET;
                         sin.sin_port = udp->dest;
                         sin.sin_addr.s_addr = inet_addr(this->clientIP.c_str());
+
+                        udp->check = 0;
+                        udp->uh_sum = 0;
 
                         //send the packet
                         Logger::debug("CovertSocket:send - Sending Packet");

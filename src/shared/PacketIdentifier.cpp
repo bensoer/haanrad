@@ -32,11 +32,12 @@ char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 
 char* PacketIdentifier::findTransportLayer(PacketMeta *meta) {
 
-    struct iphdr * ip = (struct iphdr *)meta->packet;
+    char * ptr = meta->packet;
+    struct iphdr * ip = (struct iphdr *)ptr;
     char * transportLayer = nullptr;
     int ipHeaderLength = (ip->ihl * 4);
 
-    transportLayer = (meta->packet + ipHeaderLength);
+    transportLayer = (ptr + ipHeaderLength);
 
     return transportLayer;
 }

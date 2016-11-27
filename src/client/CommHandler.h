@@ -61,6 +61,8 @@ private:
 
     string * command = nullptr;
 
+
+
     bool isFullCommand();
 
     Message generateMessageFromCommand(string haanradPacket);
@@ -75,6 +77,10 @@ public:
     void listenForMessages();
 
     void processMessagesToSend();
+
+    string * getCommandBuffer();
+
+    void clearCommandBuffer();
 
 };
 

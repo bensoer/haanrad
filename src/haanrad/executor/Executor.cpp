@@ -68,7 +68,10 @@ std::string Executor::execute(Message message) {
         return haanradPacket;
 
     }else if(message.messageType == MessageType::FILE || message.messageType == MessageType::FILESYNC){
-        Logger::debug("Executor:execute - Command To Execute Is A FILE or FILESYNC Command [NOT IMPLEMENTED]");
+        Logger::debug("Executor:execute - Command To Execute Is A FILE or FILESYNC Command");
+
+        this->fileSystemManagerQueue->addToQueue(message);
+
     }else if(message.messageType == MessageType::SPCCMD){
         Logger::debug("Executor:execute - Command To Be Executed Is A SPCCMD Command [NOT IMPLEMENTED]");
 

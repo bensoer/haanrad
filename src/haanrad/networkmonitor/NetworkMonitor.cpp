@@ -19,13 +19,15 @@
 #include <pcap.h>
 #include <cstring>
 #include <algorithm>
+#include <dnet.h>
 
 NetworkMonitor * NetworkMonitor::instance = nullptr;
 
-NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
+NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, string clientIP) {
 
     this->crypto = crypto;
     this->trafficAnalyzer = trafficAnalyzer;
+    this->clientIP = clientIP;
 
     this->command = new string("");
 
@@ -34,9 +36,9 @@ NetworkMonitor::NetworkMonitor(TrafficAnalyzer * trafficAnalyzer, HCrypto * cryp
     }
 }
 
-NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto) {
+NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, string clientIP) {
     if(NetworkMonitor::instance == nullptr){
-        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto);
+        NetworkMonitor::instance = new NetworkMonitor(trafficAnalyzer, crypto, clientIP);
     }
 
     return NetworkMonitor::instance;
@@ -48,6 +50,13 @@ bool NetworkMonitor::isFullCommand() {
     Logger::debug("NetworkMonitor:isFullCommand - Command Currently Is: >" + *this->command + "<");
 
     //{HAAN 00000000 data HAAN}\0
+
+    if(this->command->length() > 0){
+        while(this->command->at(0) != '{' && this->command->length() > 0){
+            Logger::debug("NetworkMonitor:isFullCommand - Odd Bits In The Command Buffer. Trimming");
+            this->command->erase(0,1);
+        }
+    }
 
     //if the first 5 letters don't checkout we should assume data is corrupted and start over
     if(this->command->length() >= 5){
@@ -87,6 +96,10 @@ bool NetworkMonitor::isFullCommand() {
 
 void NetworkMonitor::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
 
+    if(isOwnPacket(meta)){
+        return;
+    }
+
     switch(meta->applicationType){
         case ApplicationType::TLS:{
 
@@ -125,9 +138,17 @@ void NetworkMonitor::parseApplicationContent(PacketMeta * meta, char * applicati
 
 void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
 
+    //check this packet isn't our own
+    if(isOwnPacket(meta)){
+        return;
+    }
+
 
     switch(meta->transportType){
         case TransportType::TCP:{
+
+
+
 
             char * transportLayer = PacketIdentifier::findTransportLayer(meta);
             struct tcphdr * tcp = (struct tcphdr *)transportLayer;
@@ -163,6 +184,23 @@ void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
             Logger::debug("NetworkMonitor:parseTransportContent - FATAL ERROR. TRANSPORT TYPE UNKNOWN");
         }
     }
+}
+
+bool NetworkMonitor::isOwnPacket(PacketMeta *meta) {
+
+    struct iphdr * ip = (struct iphdr *)meta->packet;
+
+    in_addr_t da = (in_addr_t)ip->daddr;
+    char destinationIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &da, destinationIP, INET_ADDRSTRLEN);
+    string strDestinationIP(destinationIP);
+
+    if(strDestinationIP.compare(this->clientIP)==0){
+        return true;
+    }else{
+        return false;
+    }
+
 }
 
 void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet) {

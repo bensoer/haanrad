@@ -433,6 +433,7 @@ bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
             memcpy(&sourcePort, &udp->source, 2);
 
             sourcePort[1] += (this->plainKey.length() + ntohs(udp->uh_dport));
+            //sourcePort[1] += (this->plainKey.length());
 
             memcpy(&udp->source, &sourcePort, 2);
 

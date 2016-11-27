@@ -15,13 +15,14 @@ void FileSystemManagerThread::start() {
     while(this->keepRunning){
 
         Logger::debug("FileSystemThread - Processing New File System Requests");
-        //1) Add as many events as you can
-        while(this->fileSystemManagerQueue->getFileMessage().interMessageCode != InterClientMessageType::EMPTY){
 
-            Message message = this->fileSystemManagerQueue->getFileMessage();
+        //1) Add as many events as you can
+        Message message = this->fileSystemManagerQueue->getFileMessage();
+        while(message.interMessageCode != InterClientMessageType::EMPTY){
 
             this->fileSystemManager->updateNotifyEvents(message);
 
+            message = this->fileSystemManagerQueue->getFileMessage();
         }
 
         Logger::debug("FileSystemThread - Now Hanging For File System Events");

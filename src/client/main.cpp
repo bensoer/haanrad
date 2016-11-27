@@ -4,6 +4,7 @@
 #include "CommHandler.h"
 #include "../shared/Logger.h"
 #include "../shared/HCrypto.h"
+#include "LocalFileManager.h"
 
 
 void * listenBootstrapper(void * commHandlerListener){
@@ -34,17 +35,17 @@ Message generateHaanradPacket(string haanradCommand){
         //this is to listen
         unsigned char pktMode = (unsigned char)MessageType::FILE;
         message.messageType = MessageType::FILE;
-        haanradPacket += to_string(pktMode);
+        haanradPacket += pktMode;
     }else if(haanradCommand.find("hsync") == 0){
         //this is to sync
         unsigned char pktMode = (unsigned char)MessageType::FILESYNC;
         message.messageType = MessageType::FILESYNC;
-        haanradPacket += to_string(pktMode);
+        haanradPacket += pktMode;
     }else if(haanradCommand.find("hsuicide") == 0){
         //this is to kill haanrad
         unsigned char pktMode = (unsigned char)MessageType::SPCCMD;
         message.messageType = MessageType::SPCCMD;
-        haanradPacket += to_string(pktMode);
+        haanradPacket += pktMode;
         haanradCommand += " hsuicide";
     }else{
         message.messageType = MessageType::INTERCLIENT;
@@ -67,6 +68,8 @@ Message generateHaanradPacket(string haanradCommand){
 
 
 int main() {
+
+    string syncDirectory = "./sync";
 
     cout << "==== Initializing Haanrad Console ====" << endl;
     //Logger::setDebug(true);
@@ -123,6 +126,9 @@ int main() {
         }
     }
 
+    LocalFileManager * lfm = new LocalFileManager(syncDirectory);
+    string haanradPath = "";
+
     //at this point haanrad has connected and interactive mode is possible
     while(1){
 
@@ -155,6 +161,39 @@ int main() {
                 cout << ":> " << message.data << endl;
                 cout << ":> ====  End Of Transmission  ====" << endl;
             }
+
+            if(message.messageType == MessageType::FILEANSWER){
+                cout << ":> A hlisten or hsync notification has returned." << endl;
+                if(message.data.at(0) == '1'){
+                    //next packet will belong to a download
+                    cout << ":> An hsync notification has been detected. The next check will write the contents to file" << endl;
+
+                    unsigned long pathIndex = message.data.find('/');
+                    haanradPath = message.data.substr(pathIndex + 1);
+                    string fullPath = syncDirectory + "/" + haanradPath;
+                    lfm->buildOutDirectory(haanradPath);
+                    cout << ":> The hsync file will be downloaded to: " << fullPath << endl;
+
+                    cout << ":> ==== Start Of Transmission ====" << endl;
+                    cout << ":> " << message.data.substr(1) << endl;
+                    cout << ":> ====  End Of Transmission  ====" << endl;
+
+                }else{
+                    cout << ":> ==== Start Of Transmission ====" << endl;
+                    cout << ":> " << message.data.substr(1) << endl;
+                    cout << ":> ====  End Of Transmission  ====" << endl;
+                }
+            }
+
+            if(message.messageType == MessageType::FILEDWNLD){
+                string fullPath = syncDirectory + "/" + haanradPath;
+                cout << ":> A file Download Has Been Detected. Will Write To PreConfigured Location (" << fullPath
+                     << ")" << endl;
+                string rawData = message.data.substr(6, message.data.length() - 6 - 5 - 1);
+                cout << ":> Writing Is Starting ..." << endl;
+                lfm->syncFile(haanradPath, rawData);
+                cout << ":> Writing Has Completed" << endl;
+            }
         }
         //additional checks if something does arrive...
 
@@ -170,7 +209,7 @@ int main() {
         string command(BUFFER);
         command.erase(command.length() - 1); //remove the \n character
 
-        if(command.find("send") != 0 && command.find("check") != 0){
+        if(command.find("send") != 0 && command.find("check") != 0 && command.find("buf") != 0){
             cout << ":> Invalid Command Entered. Cannot Process" << endl;
             promptedHelp = false;
             continue;
@@ -199,6 +238,19 @@ int main() {
             cout << ":> Checking For New Messages" << endl;
             checkQueue = true;
             continue;
+        }
+
+        //debug commands
+        if(command.find("bufcheck") == 0){
+            cout << ":> Dumping Out Current Recv Buffer From Haanrad" << endl;
+            string * buffer = commHandler->getCommandBuffer();
+            cout << ":>   >" << *buffer << "<" << endl;
+        }
+
+        if(command.find("bufclear") == 0){
+            cout << ":> Clearing Comm Handler Buffer" << endl;
+            commHandler->clearCommandBuffer();
+            cout << ":> Clear Comm Handler Buffer Complete" << endl;
         }
 
 

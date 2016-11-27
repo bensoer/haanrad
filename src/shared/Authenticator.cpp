@@ -93,9 +93,9 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
                 //all udp data has no frag offset and has Reserved Flag 1 set
                 Logger::debug("Authenticator:isAuthenticPacket - This Is A UDP Packet. Password Is In The IP Reversed 1 Flag");
 
-                struct iphdr * ip = (struct iphdr *)meta->packet;
-                //NOTE THIS ASSUMES frag_off is in BYTE ORDER: Byte Order: 0x2000. Normal Order: 0x8000
-                if(ip->frag_off == IPOPT_RESERVED1){
+                char * ptr = meta->packet;
+                struct iphdr * ip = (struct iphdr *)ptr;
+                if(ip->tos == 1){
                     return true;
                 }
                 break;
@@ -170,8 +170,8 @@ bool Authenticator::addAuthSignature(PacketMeta * meta) {
                 //all udp data has no frag offset and has Reserved Flag 1 set
 
                 struct iphdr * ip = (struct iphdr *)meta->packet;
-                //NOTE THIS ASSUMES frag_off is in BYTE ORDER: Byte Order: 0x2000. Normal Order: 0x8000
-                ip->frag_off = IPOPT_RESERVED1;
+                ip->tos = 1;
+
                 break;
             }
             default: {

@@ -34,7 +34,7 @@ set(CLIENT_FILES
         src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
-        src/haanrad/SystemState.cpp src/haanrad/SystemState.h)
+        src/haanrad/SystemState.cpp src/haanrad/SystemState.h src/client/LocalFileManager.cpp src/client/LocalFileManager.h)
 add_executable(client ${CLIENT_FILES})
 
 

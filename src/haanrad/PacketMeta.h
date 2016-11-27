@@ -30,6 +30,7 @@ public:
     TransportType::TransportTypeEnum transportType;
     ApplicationType::ApplicationTypeEnum applicationType;
     char packet[IP_MAXPACKET];
+
 };
 
 

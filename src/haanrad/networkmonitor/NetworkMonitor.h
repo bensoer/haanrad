@@ -49,7 +49,7 @@ private:
     pcap_if_t * listeningInterface = nullptr;
 
     static NetworkMonitor * instance;
-    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto);
+    NetworkMonitor(TrafficAnalyzer * analyzer, HCrypto * crypto, string clientIP);
 
     bool isFullCommand();
 
@@ -58,11 +58,14 @@ private:
 
     static void packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_info, const u_char *packet);
 
+    bool isOwnPacket(PacketMeta * meta);
+    string clientIP = "";
+
 public:
 
 
 
-    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto);
+    static NetworkMonitor * getInstance(TrafficAnalyzer * analyzer, HCrypto * crypto, string clientIP);
 
     string * listenForTraffic();
 

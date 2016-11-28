@@ -6,7 +6,7 @@
 #include "TrafficAnalyzer.h"
 
 #include "../shared/PacketIdentifier.h"
-#include "../shared/Logger.h"
+#include "../shared/utils/Logger.h"
 #include <ctime>
 #include <sys/time.h>
 #include <algorithm>

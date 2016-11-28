@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include "LocalFileManager.h"
-#include "../shared/Logger.h"
+#include "../shared/utils/Logger.h"
 
 LocalFileManager::LocalFileManager(std::string syncRootDir) {
     this->syncRootDir = syncRootDir;
@@ -18,7 +18,7 @@ void LocalFileManager::buildOutDirectory(std::string haanradDir) {
     unsigned long index = haanradDir.find_last_of('/');
     if(index == std::string::npos){
         Logger::debug("LocalFileManager::buildOutDirectory - Could Not Find Slash. Can't Sync Localy");
-        cout << "Local Sync Is A Problem" << endl;
+        //cout << "Local Sync Is A Problem" << endl;
     }
 
     std::string directory = haanradDir.substr(0, index);

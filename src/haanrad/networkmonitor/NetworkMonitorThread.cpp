@@ -3,7 +3,7 @@
 //
 
 #include "NetworkMonitorThread.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 #include "../executor/ExecutorQueue.h"
 
 NetworkMonitorThread::NetworkMonitorThread(NetworkMonitor *networkMonitor, ExecutorQueue * executorQueue) {

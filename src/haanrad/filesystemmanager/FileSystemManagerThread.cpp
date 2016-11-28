@@ -3,7 +3,7 @@
 //
 
 #include "FileSystemManagerThread.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 
 FileSystemManagerThread::FileSystemManagerThread(FileSystemManager *fileSystemManager, FileSystemManagerQueue *queue) {
     this->fileSystemManager = fileSystemManager;

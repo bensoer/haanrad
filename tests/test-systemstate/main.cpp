@@ -1,7 +1,7 @@
 
 
 #include "../../src/haanrad/SystemState.h"
-#include "../../src/shared/Logger.h"
+#include "../../src/shared/utils/Logger.h"
 
 int main(int argc, char * argv[]){
 

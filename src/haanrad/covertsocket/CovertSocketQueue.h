@@ -6,7 +6,7 @@
 #define HAANRAD_COVERTSOCKETQUEUE_H
 
 
-#include "../PacketMeta.h"
+#include "../../shared/PacketMeta.h"
 #include <queue>
 #include <mutex>
 

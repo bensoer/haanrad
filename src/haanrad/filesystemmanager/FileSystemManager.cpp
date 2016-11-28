@@ -3,7 +3,7 @@
 //
 
 #include "FileSystemManager.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 #include <sys/inotify.h>
 #include <sys/select.h>
 #include <cstring>

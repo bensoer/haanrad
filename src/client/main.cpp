@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "MessageQueue.h"
 #include "CommHandler.h"
-#include "../shared/Logger.h"
+#include "../shared/utils/Logger.h"
 #include "../shared/HCrypto.h"
 #include "LocalFileManager.h"
 

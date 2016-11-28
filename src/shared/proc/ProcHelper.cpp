@@ -6,7 +6,7 @@
 #include <dirent.h>
 #include <cstring>
 #include "ProcHelper.h"
-#include "Logger.h"
+#include "../utils/Logger.h"
 
 vector<ProcDev> * ProcHelper::getAllNetworkInterfaceStats() {
 

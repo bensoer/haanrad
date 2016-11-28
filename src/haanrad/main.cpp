@@ -1,14 +1,14 @@
 #include <iostream>
 #include <zconf.h>
 #include "ProcessDistorter.h"
-#include "../shared/Logger.h"
-#include "../shared/argparcer.h"
+#include "../shared/utils/Logger.h"
+#include "../shared/utils/argparcer.h"
 #include "TrafficAnalyzer.h"
 #include "networkmonitor/NetworkMonitor.h"
 #include "SystemState.h"
 #include "Time.h"
 #include "../shared/PacketIdentifier.h"
-#include "../shared/Structures.h"
+#include "../shared/utils/Structures.h"
 #include "../shared/Authenticator.h"
 #include "covertsocket/CovertSocket.h"
 #include "covertsocket/CovertSocketQueue.h"

@@ -6,8 +6,8 @@
 #include <iostream>
 #include "../../src/shared/HCrypto.h"
 #include "../../src/shared/PacketIdentifier.h"
-#include "../../src/shared/Structures.h"
-#include "../../src/shared/Logger.h"
+#include "../../src/shared/utils/Structures.h"
+#include "../../src/shared/utils/Logger.h"
 #include "../../src/shared/Authenticator.h"
 #include <netinet/tcp.h>
 

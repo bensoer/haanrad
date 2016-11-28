@@ -6,7 +6,7 @@
 #define HAANRAD_CRYPTO_H
 
 
-#include "../haanrad/PacketMeta.h"
+#include "PacketMeta.h"
 #include <string>
 #include <openssl/sha.h>
 

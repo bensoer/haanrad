@@ -14,24 +14,24 @@ set(HAANRAD_FILES
         src/haanrad/SystemState.cpp src/haanrad/SystemState.h
         src/haanrad/Time.cpp src/haanrad/Time.h
         src/haanrad/networkmonitor/NetworkMonitorThread.cpp src/haanrad/networkmonitor/NetworkMonitorThread.h
-        src/shared/Logger.cpp src/shared/Logger.h
-        src/shared/ProcHelper.cpp src/shared/ProcHelper.h
-        src/shared/ProcDev.cpp src/shared/ProcDev.h
+        src/shared/utils/Logger.cpp src/shared/utils/Logger.h
+        src/shared/proc/ProcHelper.cpp src/shared/proc/ProcHelper.h
+        src/shared/proc/ProcDev.cpp src/shared/proc/ProcDev.h
         src/shared/Authenticator.cpp src/shared/Authenticator.h
-        src/haanrad/PacketMeta.cpp src/haanrad/PacketMeta.h
-        src/shared/Structures.h
+        src/shared/PacketMeta.cpp src/shared/PacketMeta.h
+        src/shared/utils/Structures.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
-        src/shared/argparcer.h src/haanrad/covertsocket/CovertSocketThread.cpp src/haanrad/covertsocket/CovertSocketThread.h src/haanrad/covertsocket/CovertSocketQueue.cpp src/haanrad/covertsocket/CovertSocketQueue.h src/haanrad/executor/Executor.cpp src/haanrad/executor/Executor.h src/haanrad/executor/ExecutorQueue.cpp src/haanrad/executor/ExecutorQueue.h src/haanrad/filesystemmanager/FileSystemManager.cpp src/haanrad/filesystemmanager/FileSystemManager.h src/haanrad/filesystemmanager/FileSystemManagerQueue.cpp src/haanrad/filesystemmanager/FileSystemManagerQueue.h src/haanrad/filesystemmanager/FileSystemManagerThread.cpp src/haanrad/filesystemmanager/FileSystemManagerThread.h)
+        src/shared/utils/argparcer.h src/haanrad/covertsocket/CovertSocketThread.cpp src/haanrad/covertsocket/CovertSocketThread.h src/haanrad/covertsocket/CovertSocketQueue.cpp src/haanrad/covertsocket/CovertSocketQueue.h src/haanrad/executor/Executor.cpp src/haanrad/executor/Executor.h src/haanrad/executor/ExecutorQueue.cpp src/haanrad/executor/ExecutorQueue.h src/haanrad/filesystemmanager/FileSystemManager.cpp src/haanrad/filesystemmanager/FileSystemManager.h src/haanrad/filesystemmanager/FileSystemManagerQueue.cpp src/haanrad/filesystemmanager/FileSystemManagerQueue.h src/haanrad/filesystemmanager/FileSystemManagerThread.cpp src/haanrad/filesystemmanager/FileSystemManagerThread.h)
 add_executable(haanrad ${HAANRAD_FILES})
 
 set(CLIENT_FILES
         src/client/main.cpp src/client/CommHandler.cpp
         src/client/CommHandler.h src/client/MessageQueue.cpp
         src/client/MessageQueue.h src/client/Message.cpp
-        src/client/Message.h src/shared/Logger.cpp src/shared/Logger.h
-        src/shared/ProcHelper.cpp src/shared/ProcHelper.h src/shared/ProcStat.cpp
-        src/shared/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h
+        src/client/Message.h src/shared/utils/Logger.cpp src/shared/utils/Logger.h
+        src/shared/proc/ProcHelper.cpp src/shared/proc/ProcHelper.h src/shared/proc/ProcStat.cpp
+        src/shared/proc/ProcStat.h src/shared/Authenticator.cpp src/shared/Authenticator.h
         src/shared/HCrypto.cpp src/shared/HCrypto.h
         src/shared/PacketIdentifier.cpp src/shared/PacketIdentifier.h
         src/haanrad/SystemState.cpp src/haanrad/SystemState.h src/client/LocalFileManager.cpp src/client/LocalFileManager.h)

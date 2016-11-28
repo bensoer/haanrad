@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <sys/time.h>
 #include "SystemState.h"
-#include "../shared/ProcHelper.h"
-#include "../shared/Logger.h"
+#include "../shared/proc/ProcHelper.h"
+#include "../shared/utils/Logger.h"
 
 
 SystemState::SystemStateMode SystemState::currentState = SystemStateMode::STARTUP;

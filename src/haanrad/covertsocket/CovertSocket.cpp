@@ -3,9 +3,9 @@
 //
 
 #include "CovertSocket.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 #include "../SystemState.h"
-#include "../../shared/Structures.h"
+#include "../../shared/utils/Structures.h"
 #include "../../shared/Authenticator.h"
 #include "../../shared/PacketIdentifier.h"
 
@@ -247,6 +247,7 @@ void CovertSocket::send(string payload) {
 
                 switch(meta.transportType){
                     case TransportType::TCP:{
+                        sleep(1);
                         Logger::debug("CovertSocket:Send - Packet Is A TCP Packet. Payload Will Be Sent In TCP Packet");
 
                         string tcpPayload = "";

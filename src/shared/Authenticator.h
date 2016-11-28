@@ -6,7 +6,7 @@
 #define HAANRAD_AUTHENTICATOR_H
 
 #include <string>
-#include "../haanrad/PacketMeta.h"
+#include "PacketMeta.h"
 
 using namespace std;
 

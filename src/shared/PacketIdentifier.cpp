@@ -3,8 +3,8 @@
 //
 
 #include "PacketIdentifier.h"
-#include "Structures.h"
-#include "Logger.h"
+#include "utils/Structures.h"
+#include "utils/Logger.h"
 #include <netinet/tcp.h>
 #include <cstring>
 

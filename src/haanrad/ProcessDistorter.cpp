@@ -4,7 +4,7 @@
 
 #include <cstring>
 #include "ProcessDistorter.h"
-#include "../shared/Logger.h"
+#include "../shared/utils/Logger.h"
 #include <sys/prctl.h>
 #include <vector>
 #include <dirent.h>

@@ -5,9 +5,9 @@
 #include <netinet/tcp.h>
 #include <cstring>
 #include "Authenticator.h"
-#include "Logger.h"
+#include "utils/Logger.h"
 #include "PacketIdentifier.h"
-#include "Structures.h"
+#include "utils/Structures.h"
 
 string Authenticator::password;
 

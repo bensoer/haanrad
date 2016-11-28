@@ -5,7 +5,7 @@
 #include <iostream>
 #include <zconf.h>
 #include "../../src/haanrad/ProcessDistorter.h"
-#include "../../src/shared/Logger.h"
+#include "../../src/shared/utils/Logger.h"
 
 using namespace std;
 

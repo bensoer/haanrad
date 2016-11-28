@@ -14,8 +14,8 @@
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
 #include "openssl/sha.h"
-#include "Structures.h"
-#include "Logger.h"
+#include "utils/Structures.h"
+#include "utils/Logger.h"
 #include "PacketIdentifier.h"
 
 HCrypto::~HCrypto() {
@@ -213,8 +213,8 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
             memcpy(&sequenceNumber, &tcp->seq, 4);
 
             //encrypt the last two
-            sequenceNumber[2] -= this->plainKey.length();
-            sequenceNumber[3] -= this->plainKey.length();
+            //sequenceNumber[2] -= this->plainKey.length();
+            //sequenceNumber[3] -= this->plainKey.length();
 
             memcpy(&tcp->seq, &sequenceNumber, 4);
 
@@ -418,8 +418,8 @@ bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
             memcpy(&sequenceNumber, &tcp->seq, 4);
 
             //encrypt the last two
-            sequenceNumber[2] += this->plainKey.length();
-            sequenceNumber[3] += this->plainKey.length();
+            //sequenceNumber[2] += this->plainKey.length();
+            //sequenceNumber[3] += this->plainKey.length();
 
             memcpy(&tcp->seq, &sequenceNumber, 4);
 

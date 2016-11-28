@@ -15,7 +15,7 @@
 #include <string>
 #include <zconf.h>
 #include "MessageQueue.h"
-#include "../haanrad/PacketMeta.h"
+#include "../shared/PacketMeta.h"
 #include "../shared/HCrypto.h"
 #include <pcap.h>
 
@@ -82,6 +82,7 @@ public:
 
     void clearCommandBuffer();
 
+    bool isOwnPacket(PacketMeta * meta);
 };
 
 

@@ -14,7 +14,7 @@
 #include <netinet/ip.h>
 #include <deque>
 #include <mutex>
-#include "PacketMeta.h"
+#include "../shared/PacketMeta.h"
 
 using namespace std;
 

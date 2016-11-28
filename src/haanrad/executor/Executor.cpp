@@ -5,7 +5,7 @@
 #include <cstring>
 #include <zconf.h>
 #include "Executor.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 
 Executor::Executor(FileSystemManagerQueue *fileSystemManagerQueue) {
     this->fileSystemManagerQueue = fileSystemManagerQueue;

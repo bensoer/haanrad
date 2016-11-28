@@ -10,11 +10,11 @@
 #include <netinet/udp.h>
 #include <netinet/ip.h>       // struct ip and IP_MAXPACKET (which is 65535)
 #include "NetworkMonitor.h"
-#include "../../shared/Logger.h"
+#include "../../shared/utils/Logger.h"
 #include "../../shared/Authenticator.h"
 #include "../../shared/PacketIdentifier.h"
 #include "../../shared/HCrypto.h"
-#include "../../shared/Structures.h"
+#include "../../shared/utils/Structures.h"
 #include <sys/epoll.h>
 #include <pcap.h>
 #include <cstring>

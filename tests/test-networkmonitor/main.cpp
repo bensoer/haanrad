@@ -3,7 +3,7 @@
 //
 
 #include "../../src/haanrad/networkmonitor/NetworkMonitor.h"
-#include "../../src/shared/Logger.h"
+#include "../../src/shared/utils/Logger.h"
 #include "../../src/shared/HCrypto.h"
 
 int main(int argc, char * argv[]){

@@ -10,9 +10,9 @@
 #include <dnet.h>
 #include "CommHandler.h"
 #include "MessageQueue.h"
-#include "../shared/Logger.h"
+#include "../shared/utils/Logger.h"
 #include "../shared/PacketIdentifier.h"
-#include "../shared/Structures.h"
+#include "../shared/utils/Structures.h"
 #include "../shared/Authenticator.h"
 
 CommHandler * CommHandler::instance = nullptr;
@@ -66,6 +66,23 @@ void CommHandler::killListening() {
 
 void CommHandler::killProcessing() {
     this->continueProcessing = false;
+}
+
+bool CommHandler::isOwnPacket(PacketMeta *meta) {
+
+    struct iphdr * ip = (struct iphdr *)meta->packet;
+
+    in_addr_t da = (in_addr_t)ip->daddr;
+    char destinationIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &da, destinationIP, INET_ADDRSTRLEN);
+    string strDestinationIP(destinationIP);
+
+    if(strDestinationIP.compare(this->haanradIP)==0){
+        return true;
+    }else{
+        return false;
+    }
+
 }
 
 bool CommHandler::getInterface() {
@@ -561,6 +578,10 @@ void CommHandler::processMessagesToSend() {
 
 void CommHandler::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
 
+    if(isOwnPacket(meta)){
+        return;
+    }
+
     switch(meta->applicationType){
         case ApplicationType::TLS:{
 
@@ -601,6 +622,9 @@ void CommHandler::parseApplicationContent(PacketMeta * meta, char * applicationL
 
 void CommHandler::parseTransportContent(PacketMeta * meta) {
 
+    if(isOwnPacket(meta)){
+        return;
+    }
 
     switch(meta->transportType){
         case TransportType::TCP:{
@@ -651,14 +675,14 @@ bool CommHandler::isFullCommand() {
     Logger::debug("CommHandler:isFullCommand - Validating Data Retreived So Far");
     Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
 
-    //cout << "Command Currently Is: >" << *this->command << "<" << endl;
+    cout << "Command Currently Is: >" << *this->command << "<" << endl;
 
     //{HAAN 00000000 data HAAN}\0
 
     //if the first 5 letters don't checkout we should assume data is corrupted and start over
     if(this->command->length() >= 5){
-        if(this->command->at(0) != '{' && this->command->at(1) != 'H' && this->command->at(2) != 'A'
-           && this->command->at(3) != 'A' && this->command->at(4) != 'N'){
+        if(this->command->at(0) != '{' || this->command->at(1) != 'H' || this->command->at(2) != 'A'
+           || this->command->at(3) != 'A' || this->command->at(4) != 'N'){
             Logger::debug("CommHandler:isFullCommand - First 5 Letters In Command Don't Match. Assuming Corrupt");
             Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
 

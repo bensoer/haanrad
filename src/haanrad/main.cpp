@@ -98,6 +98,10 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    Logger::debug("Main - Escalating File Privileges");
+    setuid(0);
+    setgid(0);
+
     //Create ProcessDistorter
     ProcessDistorter * processDistorter = new ProcessDistorter(argv, useDefaultOnFail, appendHint);
     //Execute this immediately to hide process to something

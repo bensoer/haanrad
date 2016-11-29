@@ -142,6 +142,10 @@ int main(int argc, char * argv[]) {
             clientIP = configParams.at("c");
         }
 
+        if(configParams.find("h") != configParams.end()){
+            historyLength = stoi(configParams.at("h"));
+        }
+
     }
 
     Logger::debug("Main - Escalating File Privileges");

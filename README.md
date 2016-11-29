@@ -31,12 +31,34 @@ The parameters are as follows:
 | --------- | -------------------------------------------------------------------------------------- | ---------- | --------------------- | -------------------------------- | ------------ |
 | -c        | Give the dot notation IP of the client                                                 | Yes        | Yes                   | N/A                              | -c 127.0.0.1 |
 | -t        | Give time cycles of Haanrad in milliseconds, lower values will make Haanrad run faster | No         | Yes                   | 100                              | -t 450       |
-| -h        | Set History Length of how many packet Haanrad will store                               | No         | No                    | 100                              | -h 200       |
+| -h        | Set History Length of how many packet Haanrad will store                               | No         | YES                   | 100                              | -h 200       |
 | --DEBUG   | Get Debug Console Out                                                                  | No         | No                    | Disabled                         | ---DEBUG     |
 | --DOF     | Set Haanrad to use default name on rename failure                                      | No         | No                    | Previous name is used on failure | --DOF        |
 | --HINT    | Append `-bd` to the name chosen for Haanrad                                            | No         | No                    | Not Appended                     | --HINT       |
  
+Run the client with the following command from within the `/bin` folder
+```
+./client [--DEBUG]`
+```
+The parameters are as follows:
 
+| Parameter | Purpose                             | Required ? | Config File Support ? | Default  | Example |
+| --------- | ----------------------------------- | ---------- | --------------------- | -------- | ------- |
+| --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
+ 
+ 
+####Config File Support
+Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
+in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
+and is never referred to afterwards. In order for the config file to be detected by haanrad it must be located in the same
+location as the `haanrad` binary and named `.cache`. Settings are entered in the format of <key>=<value> with the key
+being the supported flag listed above without the preceding dash (`-`). An example configuration file might look like this
+```
+c=127.0.0.1
+t=150
+```
+Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
+of the file may cause Haanrad to even crash and not load at all
 
 ##Features
 * Dynamic Password Generation
@@ -44,6 +66,7 @@ The parameters are as follows:
 * Password Based Data Encryption
 * Packet Specific Payload Hiding
 * Dynamic Network Based Packet Generation
+* Popular Process Masking
 * File Event and File Syncrhonization
 * Pesuodo-Shell Functionality
 * Infinite Data Transfer
@@ -113,6 +136,13 @@ the network, and will send TCP/TLS data when it sees alot of TCP and TLS data on
 TCP options, allow Haanrad to operate on unknown Application Layer protocols. Haanrad for example has been tested to use
 packets from Google's QUIC protocol, and ICMP or NTS error packets from the network. Due to this ability, Haanrad is able
 to heavily blend in and adapt to most network environments.
+
+###Popular Process Masking
+Haanrad upon startup will immediatly rename itself so as to be disguised as another process during execution. Periodicaly
+throughout Haanrads execution, it will also rename itself again. Haanrad picks its names by scanning all process names on
+the system and then tallies them together to determine the most popular name. It then will rename itself to that processes
+name to look the least suspicious on the victim machine. This functionality is meant to exploit the commonality of many
+users having numerous internet browsers open, making it look unsuspicious when multiple show up with `ps` or system monitor
 
 ###File Event And File Synchronization
 When operating the exfiltration functions, Haanrad supports two options: File Event Listening, and File Synchronization. File

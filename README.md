@@ -34,7 +34,7 @@ The parameters are as follows:
 | -h        | Set History Length of how many packet Haanrad will store                               | No         | YES                   | 100                              | -h 200       |
 | --DEBUG   | Get Debug Console Out                                                                  | No         | No                    | Disabled                         | ---DEBUG     |
 | --DOF     | Set Haanrad to use default name on rename failure                                      | No         | No                    | Previous name is used on failure | --DOF        |
-| --HINT    | Append `-bd` to the name chosen for Haanrad                                            | No         | No                    | Not Appended                     | --HINT       |
+| --HINT    | Append `-bd` to the process name chosen for Haanrad                                    | No         | No                    | Not Appended                     | --HINT       |
  
 Run the client with the following command from within the `/bin` folder
 ```

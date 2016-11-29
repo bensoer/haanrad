@@ -1,9 +1,5 @@
 #Haanrad
-
-==========================================================
- FULL DISCLOSURE: THIS THING CAN DO BAD THINGS. UNLESS UR 
- A BADMAN OR BATMAN, ITS STRONGLY ADVISED NOT TO BE USED  
-==========================================================
+<b> FULL DISCLOSURE: THIS THING CAN DO BAD THINGS. UNLESS UR A BADMAN OR BATMAN, ITS STRONGLY ADVISED NOT TO BE USED </b>
 
 Haanrad is a backdoor exfiltration system that allows a user to covertly exploit the installed system
 haanrad is deployed to. Haanrad can be configured in numerous different ways and is designed to be
@@ -29,6 +25,7 @@ Run Haanrad with the following command from within the `/bin` folder
 ./haanrad -c <ipofclient> [--DEBUG] [--DOF] [--HINT] [-t <timetick>] [-h <historylength>]
 ```
 The parameters are as follows:
+
 | Parameter | Purpose                                                                                | Required ? | Config File Support ? | Default                          | Example      |
 | --------- | -------------------------------------------------------------------------------------- | ---------- | --------------------- | -------------------------------- | ------------ |
 | -c        | Give the dot notation IP of the client                                                 | Yes        | Yes                   | N/A                              | -c 127.0.0.1 |

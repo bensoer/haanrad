@@ -31,7 +31,7 @@ The parameters are as follows:
 | --------- | -------------------------------------------------------------------------------------- | ---------- | --------------------- | -------------------------------- | ------------ |
 | -c        | Give the dot notation IP of the client                                                 | Yes        | Yes                   | N/A                              | -c 127.0.0.1 |
 | -t        | Give time cycles of Haanrad in milliseconds, lower values will make Haanrad run faster | No         | Yes                   | 100                              | -t 450       |
-| -h        | Set History Length of how many packet Haanrad will store                               | No         | YES                   | 100                              | -h 200       |
+| -h        | Set History Length of how many packet Haanrad will store                               | No         | Yes                   | 100                              | -h 200       |
 | --DEBUG   | Get Debug Console Out                                                                  | No         | No                    | Disabled                         | ---DEBUG     |
 | --DOF     | Set Haanrad to use default name on rename failure                                      | No         | No                    | Previous name is used on failure | --DOF        |
 | --HINT    | Append `-bd` to the process name chosen for Haanrad                                    | No         | No                    | Not Appended                     | --HINT       |
@@ -125,9 +125,10 @@ template for the packets it sends. While running in `FULL FUNCTIONALITY` mode, H
 from the client. If a packet received is not from the client, Haanrad keeps track of it for later use. Haanrad keeps a
 total of the last 100 packets that it has received that failed to be from the client. Whenever Haanrad needs to send
 a message back to the client, a number of steps are executed:
-1) A tally of the most popular packet type within the 100 collected packets is calculated
-2) Then a packet of the most popular type is randomly selected from the 100
-3) Depending on its type, it is then altered with the appropriate payload amount, encryption and has its destination IP changed to the client's
+
+1. A tally of the most popular packet type within the 100 collected packets is calculated
+2. Then a packet of the most popular type is randomly selected from the 100
+3. Depending on its type, it is then altered with the appropriate payload amount, encryption and has its destination IP changed to the client's
 
 At this point the packet is simply sent out of a raw socket, where it then is processed by the network stack and sent to
 the client disguised as a network packet. This gives Haanrad a unique upperhand, as it is not limited to running on

@@ -6,21 +6,21 @@ haanrad is deployed to. Haanrad can be configured in numerous different ways and
 tolerant in most systems and adjust to the networks behavior as perceived by the victim machine in order
 to "blend in". See the `Features` Section for details on functionality
 
-##Setup
+#Setup
 
-###Prerequisits
+##Prerequisits
 You must have cmake and gcc installed along with `libdnet` and `libpcap` development libraries installed in order to compile
 Haanrad and the client. Note that Haanrad and the client will only work on the Linux based kernel and possibly some
 versions of Mac or BSD
 
-###Installation
+##Installation
 Execute the following commands
 
 1. clone the project and `cd` into the project root
 2. Execute the following command `cmake .`
 3. Then execute `make` if you are on Linux. This will generate all required programs in the project root under the `/bin` folder
 
-###Usage
+##Usage
 Run Haanrad with the following command from within the `/bin` folder
 ```
 ./haanrad -c <ipofclient> [--DEBUG] [--DOF] [--HINT] [-t <timetick>] [-h <historylength>]
@@ -47,7 +47,7 @@ The parameters are as follows:
 | --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
  
  
-####Config File Support
+###Config File Support
 Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
 in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
 and is never referred to afterwards. In order for the config file to be detected by haanrad it must be located in the same
@@ -60,7 +60,7 @@ t=150
 Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
 of the file may cause Haanrad to even crash and not load at all
 
-##Features
+#Features
 * Dynamic Password Generation
 * Password Based TLS Authentication & Header Authentication
 * Password Based Data Encryption

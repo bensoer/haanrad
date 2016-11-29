@@ -83,6 +83,8 @@ void CovertSocket::send(string payload) {
 
         while(currentPayload.length() > 0){
 
+            this->time->hangForTick();
+
             PacketMeta meta = this->trafficAnalyzer->getBestPacketToSend();
 
             if(meta.applicationType != ApplicationType::UNKNOWN){
@@ -247,7 +249,6 @@ void CovertSocket::send(string payload) {
 
                 switch(meta.transportType){
                     case TransportType::TCP:{
-                        sleep(1);
                         Logger::debug("CovertSocket:Send - Packet Is A TCP Packet. Payload Will Be Sent In TCP Packet");
 
                         string tcpPayload = "";

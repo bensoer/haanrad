@@ -19,35 +19,43 @@ Message Executor::formatCommand(std::string haanradPacket) {
     message.rawCommandMessage = haanradPacket;
     message.interMessageCode = InterClientMessageType::NONE;
 
-    unsigned char cmdType = (unsigned char)haanradPacket.at(5);
-    //unsigned int hex = (unsigned int)cmdType;
+    try{
+        unsigned char cmdType = (unsigned char)haanradPacket.at(5);
+        //unsigned int hex = (unsigned int)cmdType;
 
-    if(cmdType == MessageType::CMD){
-        message.messageType = MessageType::CMD;
-    }else if(cmdType == MessageType::FILE){
-        message.messageType = MessageType::FILE;
-    }else if(cmdType == MessageType::FILESYNC){
-        message.messageType = MessageType::FILESYNC;
-    }else{
-        Logger::debug("Executor:formatCommand - Can Not Determine Message Type. Can't Format Properly");
+        if(cmdType == MessageType::CMD){
+            message.messageType = MessageType::CMD;
+        }else if(cmdType == MessageType::FILE){
+            message.messageType = MessageType::FILE;
+        }else if(cmdType == MessageType::FILESYNC){
+            message.messageType = MessageType::FILESYNC;
+        }else{
+            Logger::debug("Executor:formatCommand - Can Not Determine Message Type. Can't Format Properly");
+            message.interMessageCode = InterClientMessageType::ERROR;
+            message.messageType = MessageType::INTERCLIENT;
+            return message;
+        }
+
+        unsigned long ending = haanradPacket.find("HAAN}");
+        if(ending == string::npos){
+            Logger::debug("Executor:formatCommand - Could Not Find End Of Command. Can't Format Properly");
+            message.interMessageCode = InterClientMessageType::ERROR;
+            message.messageType = MessageType::INTERCLIENT;
+            return message;
+        }
+
+        //we found the ending otherwise
+        string parameters = haanradPacket.substr(6, (ending - 6));
+        Logger::debug("Executor: Command Parameter Is: >" + parameters + "<");
+        message.data = parameters;
+        return message;
+    }catch(const std::exception &x){
+        Logger::debug("Executor:formatCommand - Exception Occurred Determining Message Type. Can't Format Properly");
         message.interMessageCode = InterClientMessageType::ERROR;
         message.messageType = MessageType::INTERCLIENT;
         return message;
     }
 
-    unsigned long ending = haanradPacket.find("HAAN}");
-    if(ending == string::npos){
-        Logger::debug("Executor:formatCommand - Could Not Find End Of Command. Can't Format Properly");
-        message.interMessageCode = InterClientMessageType::ERROR;
-        message.messageType = MessageType::INTERCLIENT;
-        return message;
-    }
-
-    //we found the ending otherwise
-    string parameters = haanradPacket.substr(6, (ending - 6));
-    Logger::debug("Executor: Command Parameter Is: >" + parameters + "<");
-    message.data = parameters;
-    return message;
 }
 
 //returns whatever is the appropriate response for the execution as haanrad packet
@@ -117,22 +125,25 @@ std::string Executor::executeOnConsole(Message message) {
 
     Logger::debug("Command Has Been Executed. Response At This Pont Is: >" + response + "<");
 
-    while(fgets(BUFFER, sizeof(BUFFER), fp) != NULL){
+    if(fp != NULL){
+        while(fgets(BUFFER, sizeof(BUFFER), fp) != NULL){
 
-        char tmp[BUFFERSIZE];
-        strcpy(tmp, BUFFER);
+            char tmp[BUFFERSIZE];
+            strcpy(tmp, BUFFER);
 
-        string responseLine = string(tmp);
+            string responseLine = string(tmp);
 
-        Logger::debug("ResponseLine Is: " + responseLine);
+            Logger::debug("ResponseLine Is: " + responseLine);
 
-        response += responseLine;
+            response += responseLine;
 
-        Logger::debug("Total Response At This Time Is: >" + response + "<");
+            Logger::debug("Total Response At This Time Is: >" + response + "<");
 
-        //refresh the buffer;
-        memset(BUFFER, 0 , sizeof(BUFFER));
+            //refresh the buffer;
+            memset(BUFFER, 0 , sizeof(BUFFER));
+        }
     }
+
 
     Logger::debug("Done Looping. Total Response At This Time Is: >" + response + "<");
     Logger::debug("Closing popen");

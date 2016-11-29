@@ -15,6 +15,7 @@ versions of Mac or BSD
 
 ###Installation
 Execute the following commands
+
 1. clone the project and `cd` into the project root
 2. Execute the following command `cmake .`
 3. Then execute `make` if you are on Linux. This will generate all required programs in the project root under the `/bin` folder

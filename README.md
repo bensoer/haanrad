@@ -36,16 +36,6 @@ The parameters are as follows:
 | --DOF     | Set Haanrad to use default name on rename failure                                      | No         | No                    | Previous name is used on failure | --DOF        |
 | --HINT    | Append `-bd` to the process name chosen for Haanrad                                    | No         | No                    | Not Appended                     | --HINT       |
  
-Run the client with the following command from within the `/bin` folder
-```
-./client [--DEBUG]`
-```
-The parameters are as follows:
-
-| Parameter | Purpose                             | Required ? | Config File Support ? | Default  | Example |
-| --------- | ----------------------------------- | ---------- | --------------------- | -------- | ------- |
-| --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
-
 ###Config File Support
 Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
 in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
@@ -59,6 +49,15 @@ t=150
 Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
 of the file may cause Haanrad to even crash and not load at all
 
+Run the client with the following command from within the `/bin` folder
+```
+./client [--DEBUG]`
+```
+The parameters are as follows:
+
+| Parameter | Purpose                             | Required ? | Config File Support ? | Default  | Example |
+| --------- | ----------------------------------- | ---------- | --------------------- | -------- | ------- |
+| --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
  
 ###Interactive Mode
 Upon Haanrad connecting to the client, interactive mode will enable. Making a number of commands available on the client. Each command has two layers,

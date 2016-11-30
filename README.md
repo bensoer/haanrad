@@ -47,13 +47,13 @@ The parameters are as follows:
 | --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
  
  
- ###Interactive Mode
- Upon Haanrad connecting to the client, interactive mode will enable. Making a number of commands available on the client. Each command has two layers,
- a client specific command, and a haanrad specific command, followed then by the haanrad command parameter. The command structure is as follows:
- ```
- <clientcommand> <haanradcommand> <haanradparam>
- ```
- The following client commands are available:
+###Interactive Mode
+Upon Haanrad connecting to the client, interactive mode will enable. Making a number of commands available on the client. Each command has two layers,
+a client specific command, and a haanrad specific command, followed then by the haanrad command parameter. The command structure is as follows:
+```
+<clientcommand> <haanradcommand> <haanradparam>
+```
+The following client commands are available:
 
 | Command | Purpose                          |
 | ------- | -------------------------------- |

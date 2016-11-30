@@ -21,6 +21,7 @@ Execute the following commands
 3. Then execute `make` if you are on Linux. This will generate all required programs in the project root under the `/bin` folder
 
 ##Usage
+###Haanrad
 Run Haanrad with the following command from within the `/bin` folder
 ```
 ./haanrad -c <ipofclient> [--DEBUG] [--DOF] [--HINT] [-t <timetick>] [-h <historylength>]
@@ -36,7 +37,7 @@ The parameters are as follows:
 | --DOF     | Set Haanrad to use default name on rename failure                                      | No         | No                    | Previous name is used on failure | --DOF        |
 | --HINT    | Append `-bd` to the process name chosen for Haanrad                                    | No         | No                    | Not Appended                     | --HINT       |
  
-###Config File Support
+####Config File Support
 Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
 in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
 and is never referred to afterwards. In order for the config file to be detected by haanrad it must be located in the same
@@ -49,6 +50,7 @@ t=150
 Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
 of the file may cause Haanrad to even crash and not load at all
 
+###Client
 Run the client with the following command from within the `/bin` folder
 ```
 ./client [--DEBUG]`

@@ -117,7 +117,7 @@ are as follows:
 | TLS      | Application Layer Payload      | 35 bytes         |
 | DNS      | DNS Id Header                  | 2 bytes          |
 | TCP      | TCP Sequence Number Byte 3 & 4 | 2 bytes          |
-| UDP      | UDP Source Port Byte 2         | 2 bytes          |
+| UDP      | UDP Source Port Byte 2         | 1 byte           |
 
 ###Dynamic Network Based Packet Generation
 In order to best hide the data being sent from Haanrad to the client, Haanrad uses the packets in the network as a

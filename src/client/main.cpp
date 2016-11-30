@@ -7,6 +7,7 @@
 #include "../shared/utils/Logger.h"
 #include "../shared/HCrypto.h"
 #include "LocalFileManager.h"
+#include "../shared/utils/argparcer.h"
 
 CommHandler * globalCommHandler = nullptr;
 
@@ -92,11 +93,13 @@ Message generateHaanradPacket(string haanradCommand){
 }
 
 
-int main() {
+int main(int argc, char * argv[]) {
 
     string syncDirectory = "./sync";
 
     cout << "==== Initializing Haanrad Console ====" << endl;
+    ArgParcer parcer;
+    Logger::setDebug(parcer.TagExists("--DEBUG", argv, argc));
     //Logger::setDebug(true);
 
 

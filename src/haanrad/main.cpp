@@ -121,11 +121,6 @@ int main(int argc, char * argv[]) {
     }
 
     string clientIP = parcer.GetTagData("-c", argv, argc);
-    if(clientIP.compare("-1")==0){
-        Logger::debug("Main - Can't Execute without A Client IP. Aborting");
-        return 1;
-    }
-
     int timerLength = parcer.GetTagVal("-t", argv, argc);
     if(timerLength == -1){
         timerLength = 100;
@@ -146,6 +141,12 @@ int main(int argc, char * argv[]) {
             historyLength = stoi(configParams.at("h"));
         }
 
+    }
+
+    if(clientIP.compare("-1")==0){
+        Logger::debug("Main - Can't Execute without A Client IP. Aborting");
+        cout << "Can't Execute without a Client IP.. Aborting" << endl;
+        return 1;
     }
 
     Logger::debug("Main - Escalating File Privileges");

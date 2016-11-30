@@ -45,7 +45,20 @@ The parameters are as follows:
 | Parameter | Purpose                             | Required ? | Config File Support ? | Default  | Example |
 | --------- | ----------------------------------- | ---------- | --------------------- | -------- | ------- |
 | --DEBUG   | Print Debug Information To Console  | No         | No                    | Disabled | --DEBUG |
- 
+
+###Config File Support
+Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
+in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
+and is never referred to afterwards. In order for the config file to be detected by haanrad it must be located in the same
+location as the `haanrad` binary and named `.cache`. Settings are entered in the format of <key>=<value> with the key
+being the supported flag listed above without the preceding dash (`-`). An example configuration file might look like this
+```
+c=127.0.0.1
+t=150
+```
+Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
+of the file may cause Haanrad to even crash and not load at all
+
  
 ###Interactive Mode
 Upon Haanrad connecting to the client, interactive mode will enable. Making a number of commands available on the client. Each command has two layers,
@@ -101,17 +114,3 @@ bufclear
 #Print the client buffer
 bufcheck
 ```
-
-###Config File Support
-Haanrad supports some of the specified options to be declared within a configuration file. There is a very strict orientation
-in how this file must be written in order to be picked up by Haanrad. The configuration file is only read at startup
-and is never referred to afterwards. In order for the config file to be detected by haanrad it must be located in the same
-location as the `haanrad` binary and named `.cache`. Settings are entered in the format of <key>=<value> with the key
-being the supported flag listed above without the preceding dash (`-`). An example configuration file might look like this
-```
-c=127.0.0.1
-t=150
-```
-Note there is no spacing at the beginning or end of the file, and no comments are accepted within the file. Invalid formatting
-of the file may cause Haanrad to even crash and not load at all
-

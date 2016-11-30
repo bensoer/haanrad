@@ -55,19 +55,19 @@ The parameters are as follows:
  ```
  The following client commands are available:
 
- | Command | Purpose                          |
- | ------- | -------------------------------- |
- | send    | Send A Command To Haanrad        |
- | check   | Check For Responses From Haanrad |
+| Command | Purpose                          |
+| ------- | -------------------------------- |
+| send    | Send A Command To Haanrad        |
+| check   | Check For Responses From Haanrad |
 
- The `check` command in the above table does not have any haanrad commands or haanrad params excepted as check is used specificaly for checking
- for any new responses from Haanrad. `send` though has several options available. They are:
+The `check` command in the above table does not have any haanrad commands or haanrad params excepted as check is used specificaly for checking
+for any new responses from Haanrad. `send` though has several options available. They are:
 
- | Command | Purpose                                      | Parameter                          |
- | ------- | -------------------------------------------- | ---------------------------------- |
- | hexec   | Execute a terminal command on Haanrad        | Command to be executed             |
- | hlisten | Create/Remove a listener of a directory      | Dir to Create/Remove listenr       |
- | hsync   | Create/Remove a sync listener of a directory | Dir to Create/Remove sync listener |
+| Command | Purpose                                      | Parameter                          |
+| ------- | -------------------------------------------- | ---------------------------------- |
+| hexec   | Execute a terminal command on Haanrad        | Command to be executed             |
+| hlisten | Create/Remove a listener of a directory      | Dir to Create/Remove listenr       |
+| hsync   | Create/Remove a sync listener of a directory | Dir to Create/Remove sync listener |
 
 Note the difference between the `hlisten` and hsync` commands. Executing an `hlisten` will cause Haanrad to setup an inotify listener
 in the parameter passed directroy. When an event occurs in this directory, a response will be sent from Haanrad back to the client. Using

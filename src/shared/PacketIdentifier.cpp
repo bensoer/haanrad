@@ -10,6 +10,12 @@
 
 std::mutex PacketIdentifier::lock;
 
+/**
+ * findApplicationLayer parses the passed in PacketMEta object and creates a char pointer to the starting location of
+ * the application layer of the packet
+ * @param meta PacketMeta * - object representation of a packet
+ * @return Char *  a painter to the start of the application layer for the passed in pack
+ */
 char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 
     char * applicationLayer = nullptr;
@@ -30,6 +36,11 @@ char* PacketIdentifier::findApplicationLayer(PacketMeta * meta) {
 
 }
 
+/**
+ * findTransportLayer parses the passed in PacketMeta for the starting location of the transport layer
+ * @param meta PacketMEta * - an object represenation fo the packet being prcoessed
+ * @return Char * - A pointer to the start of the transport layer in the passed in PacketMEta object
+ */
 char* PacketIdentifier::findTransportLayer(PacketMeta *meta) {
 
     char * ptr = meta->packet;
@@ -42,6 +53,13 @@ char* PacketIdentifier::findTransportLayer(PacketMeta *meta) {
     return transportLayer;
 }
 
+/**
+ * generatePacketMeta takes the passed in raw packet and parses it apart to generate a PacketMEta object. This includes
+ * testing for various types and determinging the most suited packet type
+ * @param packet Char - The raw packet
+ * @param length Int - The length of the raw packet
+ * @return PacketMEta - object representaiton of the packet
+ */
 PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET], int length) {
     PacketIdentifier::lock.lock();
 
@@ -135,6 +153,11 @@ PacketMeta PacketIdentifier::generatePacketMeta(char packet[IP_MAXPACKET], int l
 
 }
 
+/**
+ * isDNS is a helper method for determining if the passed in data represnts that of a DNS packet
+ * @param applicationLayer Char * - pointer to the beginning of an application layer of a packet being evaluated
+ * @return Bool - status as to whether the passed in data represents a DNS packet. True means it does
+ */
 bool PacketIdentifier::isDNS(char *applicationLayer) {
     Logger::debug("PacketIdentifier:isDNS - Determining If Packet Is A DNS Packet");
     struct DNS_HEADER * dns = (struct DNS_HEADER * )applicationLayer;
@@ -183,6 +206,11 @@ bool PacketIdentifier::isHTTP(char *applicationLayer) {
     return false;
 }
 
+/**
+ * isTLS is a helepr method that determines if the passed in applicationLayer pointer represents a TLS packet
+ * @param applicationLayer Char * - a pointer to the starting point of an application layer
+ * @return Bool - Status as to whether the passed in applicationLayer bytes represnt a TLS packet. True means it does
+ */
 bool PacketIdentifier::isTLS(char *applicationLayer) {
     Logger::debug("PacketIdentifier:isTLS - Determining If Packet Is A TLS Packet");
     struct TLS_HEADER * tls = (struct TLS_HEADER *)applicationLayer;

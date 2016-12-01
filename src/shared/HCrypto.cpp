@@ -29,6 +29,11 @@ HCrypto::HCrypto() {
     OPENSSL_config(NULL);
 }
 
+/**
+ * initialize is a post consturctor operation that sets key variables needed for any encryption or decryption procedure.
+ * The passed in password is set as the password used for appropriate encryptions in the HCrypto system
+ * @param key String - the password to be used for encryption
+ */
 void HCrypto::initialize(string key) {
 
     Logger::debug("HCrypto - Setting Key");
@@ -52,7 +57,14 @@ void HCrypto::initialize(string key) {
 
 
 //we need patterns now to know what to decrypt and how to decrypt it
-
+/**
+ * decyptPAcket decrypts the contents of the passed in PacketMeta. The appropriate decryption process is decided based
+ * on the type of packet. If the decryption is successful, the encrypted ocntent is replaced with the plaintext data
+ * to be parsed out by other components
+ * @param meta PacketMeta * - an object representation of the packet being decrypted
+ * @param applicationLayer Char * - a pointer to the application layer of the packet in the PacketMEta object
+ * @return Bool - State as to whether decryption was successful or not
+ */
 bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
     if(meta->applicationType != ApplicationType::UNKNOWN){
@@ -255,10 +267,24 @@ bool HCrypto::decryptPacket(PacketMeta * meta, char *applicationLayer) {
 
 }
 
+/**
+ * setCryptBufferSize is a helepr method that sets the size of the buffers used in the encryption process. This is for
+ * use with AES encryption which is a deprecated feature at this time
+ * @param buffersize Unsigned Int - The size of the buffer
+ */
 void HCrypto::setCryptBufferSize(unsigned int buffersize) {
     this->cryptBufferSize = buffersize;
 }
 
+/**
+ * encryptPacket is an encryption method that will encrypt the appropriate payload data assumed present in the passed in
+ * PacketMEta object. The encryption process is determined based on the packet type and the location of the plaintext is
+ * also decided on the packet type. The plaintext is then encrypted and on successful encryption, placed back in the
+ * appropriate location based on the packet type
+ * @param meta PacketMeta - an object representation of the packet being encrypted
+ * @param applicationLayer Char * -  a pointer to the application layer of the packt within the PacketMEta object
+ * @return Bool - The state of whether the encryption process was successful or not
+ */
 bool HCrypto::encryptPacket(PacketMeta * meta, char *applicationLayer) {
 
     if(meta->applicationType != ApplicationType::UNKNOWN){

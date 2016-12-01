@@ -7,14 +7,23 @@
 
 #include <netinet/ip.h>
 
+/**
+ * ApplicationType is an enum that represents the various supported ApplicationLayer types of a PacketMEta
+ */
 struct ApplicationType{
     enum ApplicationTypeEnum { HTTP = 80, DNS = 53, TLS = 443, UNKNOWN = -1};
 };
 
+/**
+ * TransportType is an enum that represents the various support TransportLayer types of a PacketMeta
+ */
 struct TransportType{
     enum TransportTypeEnum { TCP = 6, UDP = 17, UNKNOWN = -1};
 };
 
+/**
+ * NetworkType is an enum that represents the various supported NetworkLayer types of a PacketMeta
+ */
 struct NetworkType{
     enum NetworkTypeEnum { IPv4 = 4, IPv6 = 6, UNKNOWN = -1};
 };

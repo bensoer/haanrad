@@ -11,6 +11,13 @@
 
 string Authenticator::password;
 
+/**
+ * isAuthenticPacket validates whether the passed in packet is avalid packet. This is determined based on the type
+ * of packet that has been passed in. If it is a valid packet, the authentication values if they are in the way
+ * are stripped out of the packet
+ * @param meta PAcketMeta * - an object representaiton of the packet in question
+ * @return Bool - State as to whether the packet is authentcated or not. true means it is
+ */
 bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
 
     //parameter should be a pointer to the payload of our message ?
@@ -110,10 +117,20 @@ bool Authenticator::isAuthenticPacket(PacketMeta * meta) {
     };
 }
 
+/**
+ * getPassword is a helper method that fetches the password that has been set for the authenticator to authenticate
+ * appropriate packets with
+ * @return String - the password that has been set for the Authenticator
+ */
 string Authenticator::getPassword() {
     return Authenticator::password;
 }
 
+/**
+ * addAuthSignature adds the appropriate authentication values to the passed in PacketMeta based on the type fo the packet
+ * @param meta PacketMEta * - an object representation fo the packet being processed
+ * @return Bool - the state of whether adding the auth signature was successful or not
+ */
 bool Authenticator::addAuthSignature(PacketMeta * meta) {
 
     //parameter should be a pointer to the payload of our message ?
@@ -185,6 +202,11 @@ bool Authenticator::addAuthSignature(PacketMeta * meta) {
 
 }
 
+/**
+ * setPassword sets the passed in password as the Authenticator password. This will be used for validating authentication
+ * and adding authentication signatures where appropriate
+ * @param password String - the authentication password
+ */
 void Authenticator::setPassword(string password) {
     Authenticator::password = password;
 }

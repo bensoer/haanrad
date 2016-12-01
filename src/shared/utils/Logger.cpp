@@ -21,18 +21,32 @@ void Logger::debug(string message) {
     }
 }
 
+/**
+ * debugl writes the passed in message to console if debug mode is enabled but does not include a return at the end
+ * @param message Unsigned Char * - the message to be printed
+ */
 void Logger::debugl(unsigned char *message) {
     if(Logger::isDebug){
         cout << message;
     }
 }
 
+/**
+ * hexDebug writes the passed in message to console if debug mode is enabled as hex dump data. A return at the end
+ * is not included in the print
+ * @param content Unsigned Char - The message to be printed
+ */
 void Logger::hexDebug(unsigned char content) {
     if(Logger::isDebug){
         printf("%08x : %d", content, content);
     }
 }
 
+/**
+ * hexDebug writes the passed in message to console if debug mode is enabled as hex dump data. A return at the end
+ * is not included in the print
+ * @param content Unsigned Short - The short value to be printed
+ */
 void Logger::hexDebug(unsigned short content) {
     if(Logger::isDebug){
         printf("%08x : %d", content, content);
@@ -40,7 +54,12 @@ void Logger::hexDebug(unsigned short content) {
 }
 
 
-
+/**
+ * debugr is a brute force printer that primts the length value of bytes from the passed in message char. This ensures
+ * even null terminators or data after the null terminator are printed
+ * @param message Unsigned Char - The message being printed
+ * @param length Int - The length of the message / the amount of bytes to print out from the message
+ */
 void Logger::debugr(unsigned char *message, int length) {
     if(Logger::isDebug){
         printf(">");
@@ -55,12 +74,20 @@ void Logger::debugr(unsigned char *message, int length) {
     }
 }
 
+/**
+ * debug prints the passed in message to console if debug mode is enabled and appends the return character at the end
+ * @param message Const Char * - The message to be printed
+ */
 void Logger::debug(unsigned char *message) {
     if(Logger::isDebug){
         cout << message << endl;
     }
 }
 
+/**
+ * debugl prints the passed in message to console using Logger::print if debug mode is enabled
+ * @param message String - the message to be printed
+ */
 void Logger::debugl(string message) {
     if(Logger::isDebug){
         Logger::print(message);

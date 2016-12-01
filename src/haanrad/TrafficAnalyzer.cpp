@@ -28,6 +28,11 @@ TrafficAnalyzer::TrafficAnalyzer(int historyLength) {
     this->timestamps->push_back(ms);
 }
 
+/**
+ * addPacketMetaToHistory adds the passed in packet to the history of packets to be analyzed for packet sending by
+ * the CovertSocket
+ * @param packet PacketMEta - object representation of a packet
+ */
 void TrafficAnalyzer::addPacketMetaToHistory(PacketMeta packet) {
     this->addPacketLock.lock();
     //deque<PacketMeta> currentHistory = this->data->back(); //back returns a reference to the last item
@@ -50,6 +55,11 @@ void TrafficAnalyzer::addPacketMetaToHistory(PacketMeta packet) {
 
 }
 
+/**
+ * setNewTimeSegment is a helper method that will set a new base time interval segment and add it to the timestamp queue.
+ * This is useful when storing multipl deque's of history, allowing for period based analyses. This functionality is currently
+ * deprecated
+ */
 void TrafficAnalyzer::setNewTimeSegment() {
     Logger::debug("TrafficAnalyzer:setNewTimeSegment - Setting New Time Segment");
 
@@ -74,6 +84,14 @@ void TrafficAnalyzer::setNewTimeSegment() {
     this->timestamps->push_back(ms);
 }
 
+/**
+ * getBestPAcketToSend takes a snapshot of the current packet queue and analysis it for the best packets to be sent
+ * by the client. This is implemented by simply tallying all the different kinds of supported packet types and then
+ * picking the most popular type. After which a random packet of the most popular type is picked from the snapshot
+ * and returned
+ * @return PacketMeta - An object representation of a packet, representing the best packet to send with at the
+ * current snapshot of the packets stored in the TrafficAnalyzer
+ */
 PacketMeta TrafficAnalyzer::getBestPacketToSend() {
     //this->historyLock.lock();
 
@@ -180,6 +198,10 @@ PacketMeta TrafficAnalyzer::getBestPacketToSend() {
     }
 }
 
+/**
+ * getLastPacketAdded is a method used during startup mode to fetch the DNS packet detected by the NetworkMonitor
+ * @return PacketMEta - an object representation of a packet
+ */
 PacketMeta TrafficAnalyzer::getLastPacketAdded() {
     Logger::debug("TrafficAnalyzer:getLastPacketAdded - Fetching Last Packet Added To TrafficAnalyser");
     return this->data->back();

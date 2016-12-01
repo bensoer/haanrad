@@ -19,6 +19,10 @@ ProcessDistorter::ProcessDistorter(char ** argv, bool useDefaultOnFail, bool app
     this->appendHint = appendHint;
 }
 
+/**
+ * setProcessName sets the process name for the program using the passed in string name
+ * @param name String - the new name to set the process to
+ */
 void ProcessDistorter::setProcessName(string name) {
 
     if(this->appendHint){
@@ -37,6 +41,10 @@ void ProcessDistorter::setProcessName(string name) {
     Logger::debug("ProcessDistorter - Process Has Been Renamed To: >" + name + "<");
 }
 
+/**
+ * determineProcessName filters through all processes and finds the most popular name. Then based on configured settings
+ * sets the haanrad system to that new name. Also on failure, handles process rename failures and recovery
+ */
 void ProcessDistorter::determineProcessName() {
 
     //find popular process
@@ -61,7 +69,12 @@ void ProcessDistorter::determineProcessName() {
     popularProcessName = nullptr;
 }
 
-
+/**
+ * findPopularProcessName searches through the /proc directory to get a tally of all the process names. It then counts
+ * all the names and returns the process name with the highest tally. In the event of a draw, findPopularProcessName
+ * using a random number genrator to pick one of the processes
+ * @return String * - The most popular process name on the system
+ */
 //TODO: Implement ability to compare processes that only differ by number in names
 string * ProcessDistorter::findPopularProcessName() {
 

@@ -34,6 +34,9 @@ Time::Time(int interval, int numberOfUsers) {
 
 }
 
+/**
+ * startTimer initializes the timer structs and signal creators
+ */
 void Time::startTimer() {
 
     Logger::debug("Time:startTimer - Setting Time Interval For " + to_string(interval) + "ms");
@@ -60,6 +63,10 @@ void Time::startTimer() {
     }*/
 }
 
+/**
+ * timeoutHandler is the event handler function that is triggered whenever a timer interrupt occurrs
+ * @param signum Int - the signal number for the signal
+ */
 void Time::timeoutHandler(int signum) {
     Logger::debug("Time:timeoutHandler - Time has Ticked. Executing Unlock Cycles");
     int unlockCount = 0;
@@ -77,6 +84,11 @@ void Time::timeoutHandler(int signum) {
     //Time::tickLock.unlock();
 }
 
+/**
+ * setNewTimeInterval reconfigures the internal structures and resets the time signal creators for the new passed in intrval.
+ * The timers are reset and started during this call
+ * @param interval Int - the interval in milliseconds between timer ticks
+ */
 void Time::setNewTimeInterval(int interval) {
     if(skipBlocking == false){
 
@@ -112,6 +124,10 @@ void Time::setNewTimeInterval(int interval) {
     //}
 }
 
+/**
+ * hangForTick is the main access method used by clients of the Time object. hangForTick will cause the threads to
+ * grab and lock into the tickLock, hanging the thread until a tick has occurred
+ */
 void Time::hangForTick() {
 
     if(this->skipBlocking == false){

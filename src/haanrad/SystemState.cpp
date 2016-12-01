@@ -34,7 +34,10 @@ SystemState * SystemState::getInstance(Time * time) {
     return SystemState::instance;
 }
 
-
+/**
+ * getSystemTime is a helper method that gets the current system time in Unic timestamp in milliseconds
+ * @return Long Int - the Unix timestamp in milliseconds
+ */
 long int SystemState::getSystemTime() {
 
     struct timeval tp;
@@ -44,6 +47,9 @@ long int SystemState::getSystemTime() {
     return ms;
 }
 
+/**
+ * resetNEtworkCheckTime fetches the current timestamp and sets it as the new network check time
+ */
 void SystemState::resetNetworkCheckTime() {
 
     struct timeval tp;
@@ -53,6 +59,12 @@ void SystemState::resetNetworkCheckTime() {
     this->previousCheckTime = ms;
 }
 
+/**
+ * getOutboundBitRate calculates the outbound bitrate of the system using the ProcHelper
+ * @param setHistoryOnly Bool - sets whether to set only the history inforamtion from the calculation. If this is true,
+ * 0 is retunred from the function
+ * @return Long Long - The outbound bitrate in bits or 0 if setHistoryOnly si true
+ */
 unsigned long long SystemState::getOutboundBitRate(bool setHistoryOnly) {
 
     ProcHelper * helper = new ProcHelper();
@@ -87,6 +99,12 @@ unsigned long long SystemState::getOutboundBitRate(bool setHistoryOnly) {
     return bitRate;
 }
 
+/**
+ * getInboundBitRate calculates the inbound bitrate of the system using the ProcHelper
+ * @param setHistoryOnly Bool - sets whether to set only the history inforamtion from the calculation. If this is true,
+ * 0 is retunred from the function
+ * @return Long Long - The intbound bitrate in bits or 0 if setHistoryOnly si true
+ */
 unsigned long long SystemState::getInboundBitRate(bool setHistoryOnly) {
 
     ProcHelper * helper = new ProcHelper();
@@ -122,6 +140,12 @@ unsigned long long SystemState::getInboundBitRate(bool setHistoryOnly) {
     return bitRate;
 }
 
+/**
+ * getAverageProcessCPUUsage calculates the average CPU time used by all processes running on the system
+ * @param setHistoryOnly Bool - set whether to return the average in milliseconds or only set the history variables for future
+ * calculations
+ * @return Double - the average in milliseconds of the process cpu usage or 0 if setHistoryOnly is true
+ */
 double SystemState::getAverageProcessCPUUsage(bool setHistoryOnly) {
 
     Logger::debug("SystemStats - Calculating Average CPU Usage Per Process");
@@ -153,6 +177,12 @@ double SystemState::getAverageProcessCPUUsage(bool setHistoryOnly) {
 
 }
 
+/**
+ * getPercentageOfCPUUsed calculates what percent of the CPU time has been spend executing Haanrad
+ * @param setHistoryOnly Bool - set whether to return the calculated percent or to only set the history variables
+ * needed for the next calculation
+ * @return Double - the percentage of usage or 0 if setHistoryOnly is true
+ */
 double SystemState::getPercentageOfCPUUsed(bool setHistoryOnly) {
 
     Logger::debug("SystemStats - Calculating Percentage of CPU Used");
@@ -211,6 +241,10 @@ double SystemState::getPercentageOfCPUUsed(bool setHistoryOnly) {
 
 }
 
+/**
+ * getAverageProcessRAMUsage calculates the average amount of space every process is using in memory currently
+ * @return Double - the average amount of ram used
+ */
 double SystemState::getAverageProcessRAMUsage() {
 
     Logger::debug("SystemStats - Calculating Average RAM Usage Per Process");
@@ -231,6 +265,10 @@ double SystemState::getAverageProcessRAMUsage() {
 
 }
 
+/**
+ * getPercentageOfRAMUsed calculates how much RAM haanrad is using in compared to all other processes on the system
+ * @return Double the percentage of RAM haanrad is using
+ */
 double SystemState::getPercentageOfRAMUsed() {
 
     Logger::debug("SystemState - Calculating RAM Usage Percent");

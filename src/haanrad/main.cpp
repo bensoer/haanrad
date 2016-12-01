@@ -19,21 +19,43 @@
 #include "executor/ExecutorQueue.h"
 #include "filesystemmanager/FileSystemManagerThread.h"
 
+/**
+ * netwokrMonitorThreadBootstrapper is a wrapper function that is executed as a new thread by the haanrad. The wrapper then executes
+ * the start funtion on the passed in networkMonitorThread
+ * @param networkMonitorThread NetworkMonitorThread - Object representation of the main functionality of the thread
+ * @return
+ */
 void * networkMonitorThreadBootstrapper(void * networkMonitorThread){
     NetworkMonitorThread * nmt = (NetworkMonitorThread *)networkMonitorThread;
     nmt->start();
 }
 
+/**
+ * covertSocketThreadBootstrapper is a wrapper function that is executed as a new thread by haanrad. The wrapper then
+ * executes the start function on the passed in CovertSocketThread
+ * @param covertSocketThread CovertSocketThread - Object representation fo the main functionaity of the thread
+ * @return
+ */
 void * covertSocketThreadBootstrapper(void * covertSocketThread){
     CovertSocketThread * cst = (CovertSocketThread *)covertSocketThread;
     cst->start();
 }
 
+/**
+ * fileSystemManagerThtreadBootstrapper is a wrapper function that is executed as a new thread by haanrad. The wrapper then
+ * executes the start function on the passed in FileSystemMAnagerThread
+ * @param fileSystemManagerThread FileSystemManagerThread - Object representation if the main functionality of the thread
+ * @return
+ */
 void * fileSystemManagerThreadBootstrapper(void * fileSystemManagerThread){
     FileSystemManagerThread * fsmt = (FileSystemManagerThread *)fileSystemManagerThread;
     fsmt->start();
 }
 
+/**
+ * checkForConfigFileArgs is a helper method that parses the config file if it exists for haanrad.
+ * @return Map<String,String> - A map representing the parameter and its values as parsed out of the config file
+ */
 map<string,string> checkForConfigFileArgs(){
 
     map<string, string> params;
@@ -61,6 +83,12 @@ map<string,string> checkForConfigFileArgs(){
     return params;
 };
 
+/**
+ * parseOutDNSQuery is a helper method that takes the passed in PacketMeta and assuming it is a DNS packet, sifts through
+ * and parses out the first QUESTION query in the packet. If it is not a DNS query, an empty string is returned
+ * @param meta PacketMeta - An object representing the packet being parsed
+ * @return String - The domain formatted as a dot notation domain string (www.google.com)
+ */
 string parseOutDNSQuery(PacketMeta meta){
 
     if(meta.applicationType != ApplicationType::DNS){
@@ -106,6 +134,12 @@ string parseOutDNSQuery(PacketMeta meta){
     return queryName;
 }
 
+/**
+ * main is the main entrance point to the haanrad program.
+ * @param argc Int - the number of arguments passed
+ * @param argv Char * - array of pointers to argument values
+ * @return Int - status of program execution success or not
+ */
 int main(int argc, char * argv[]) {
 
     ArgParcer parcer;

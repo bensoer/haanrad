@@ -8,6 +8,11 @@
 #include "ProcHelper.h"
 #include "../utils/Logger.h"
 
+/**
+ * getAllNetworkInterfaceStats is a helper method that parses out all fo the /proc/net/dev file stats info a vector
+ * of ProcDev objects
+ * @return Vector<ProcDev> * A vector of ProcDev objects representing entries in the /proc/net/dev file
+ */
 vector<ProcDev> * ProcHelper::getAllNetworkInterfaceStats() {
 
     string fullPath = "/proc/net/dev";
@@ -60,7 +65,11 @@ vector<ProcDev> * ProcHelper::getAllNetworkInterfaceStats() {
 
 }
 
-
+/**
+ * parseProcessStateInformation parses the /proc/{pid}/stat file of the passed in process id
+ * @param pid Int - the Process Id of the stats to be parsed
+ * @return ProcStat - An object representaiton of the stat file data
+ */
 ProcStat * ProcHelper::parseProcessStatInformation(int pid) {
 
     FILE * file;
@@ -126,6 +135,10 @@ ProcStat * ProcHelper::parseProcessStatInformation(int pid) {
 
 }
 
+/**
+ * getAllPRocessIDs is a helper method that fetches all of the process Ids within the /proc folder
+ * @return Vector<Int> * a Vector of Ints of all the process Ids
+ */
 vector<int> * ProcHelper::getAllProcessIDs() {
 
     vector<int> * processIDs = new vector<int>();

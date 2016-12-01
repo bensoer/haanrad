@@ -10,6 +10,12 @@ FileSystemManagerThread::FileSystemManagerThread(FileSystemManager *fileSystemMa
     this->fileSystemManagerQueue = queue;
 }
 
+/**
+ * start is the main wrapper method representing the functionality that will be executed in a seperate thread. The start
+ * method will hang continualy until the stop method is called. During this time the method continualy loops, polling the
+ * FileSystemManagerQueue for new messages. If there is one, the FileSystemManager is then updated with all the new
+ * messages, followed by the FileSystemMAnager hanging for file events.
+ */
 void FileSystemManagerThread::start() {
 
     while(this->keepRunning){
@@ -33,7 +39,9 @@ void FileSystemManagerThread::start() {
     }
 
 }
-
+/**
+ * stop will cause the start method to unhang and terminate the FileSystemManager processing.
+ */
 void FileSystemManagerThread::stop() {
     this->keepRunning = false;
 }

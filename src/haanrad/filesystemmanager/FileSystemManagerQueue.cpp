@@ -4,6 +4,11 @@
 
 #include "FileSystemManagerQueue.h"
 
+/**
+ * addToQueue adds the passed in Message object to the queue using thread safe mechanisms. Items added to this queue
+ * will be processed by the FileSystemManagerThread
+ * @param message
+ */
 void FileSystemManagerQueue::addToQueue(Message message) {
 
     this->lock.lock();
@@ -11,7 +16,11 @@ void FileSystemManagerQueue::addToQueue(Message message) {
     this->lock.unlock();
 }
 
-
+/**
+ * getFileMessage polls the queue for Message objects using thread safe mechanisms.
+ * @return Message - A Message object of a new FileSystem change or an INTERCLIENT message of type EMPTY representing
+ * and empty queue
+ */
 Message FileSystemManagerQueue::getFileMessage() {
     this->lock.lock();
 

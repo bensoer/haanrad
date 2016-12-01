@@ -9,6 +9,11 @@ CovertSocketThread::CovertSocketThread(CovertSocketQueue *queue, CovertSocket * 
     this->covertSocket = covertSocket;
 }
 
+/**
+ * start is the main thread entrance method. start executes in an infinite loop until stop is called. The method
+ * continually polls the CovertSocketQueue for new data, and upon receiving it, sends it using the CovertSocket send
+ * method
+ */
 void CovertSocketThread::start() {
 
     //this is basically an infinite loop
@@ -22,6 +27,9 @@ void CovertSocketThread::start() {
     }
 }
 
+/**
+ * stops the CovertSocketThread from operating. This will cause the start function to return
+ */
 void CovertSocketThread::stop(){
     this->keepRunning = false;
 }

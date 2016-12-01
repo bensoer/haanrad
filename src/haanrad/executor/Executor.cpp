@@ -11,6 +11,12 @@ Executor::Executor(FileSystemManagerQueue *fileSystemManagerQueue) {
     this->fileSystemManagerQueue = fileSystemManagerQueue;
 }
 
+/**
+ * formatCommand is a helpr method that takes the passed in HAAN packet represented as a string and parses it into a
+ * Message object. The Message object is then returned or an INTERCLIENT message of type ERROR is returned
+ * @param haanradPacket String - The HAAN packet represented as a string
+ * @return Message - The HAAN packet represented as a Message object
+ */
 Message Executor::formatCommand(std::string haanradPacket) {
 
     // {HAAN 00000000 data HAAN}
@@ -59,6 +65,12 @@ Message Executor::formatCommand(std::string haanradPacket) {
 }
 
 //returns whatever is the appropriate response for the execution as haanrad packet
+/**
+ * execute is the main method of the Executor object. The method parses the passed in Message object and sends it to the
+ * appropriate method or class depending on its purpose
+ * @param message Message - the HAAN packet represented as a Message object
+ * @return String - the raw results of the exexution or empty string. Depending what is appropriate upon parsing
+ */
 std::string Executor::execute(Message message) {
 
     //if it is a CMD, exeute it here
@@ -91,6 +103,12 @@ std::string Executor::execute(Message message) {
 }
 
 //returns the raw response printed out via stdout and stderr
+/**
+ * exeucteOnConsole is a helper method that takes the passed in Message object and assumes it is a CMD message object.
+ * The data is then parsed out and executed on a pseudo shell
+ * @param message Message - The HAAN packet represented as a MEssage object. This Message is assumed to be type CMD
+ * @return String - the raw output of the execution on the pseudo shell. This includes stdout and stderr
+ */
 std::string Executor::executeOnConsole(Message message) {
 
     Logger::debug("Setting Up Variables To Execute Command");

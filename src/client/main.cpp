@@ -16,6 +16,10 @@ pthread_t senderThread;
 
 bool keepRunning = true;
 
+/**
+ * shutdownClient is a helper function and event handler for Ctrl+C commands and the shutdown procedure
+ * @param signo Int - the signal being sent if there is one
+ */
 void shutdownClient(int signo){
 
     cout << ":> ==== Shutting Down Client ====" << endl;
@@ -33,17 +37,35 @@ void shutdownClient(int signo){
 
 }
 
+/**
+ * listenBootstrapper is a wrapper function that is executed as a new thread by the client. The wrapper then executes
+ * the listenForMessages funtion on the passed in commHandlerListner
+ * @param commHandlerListener CommHandler - The CommHandler to execute listenForMessages on
+ * @return
+ */
 void * listenBootstrapper(void * commHandlerListener){
     CommHandler * listener = (CommHandler *)commHandlerListener;
     listener->listenForMessages();
 }
 
+/**
+ * sendBootstrapper is a wrapper function that is executed as a new thread by the client. The wrapper then executes
+ * the processMessagestoSend function on the passed in commHandlerSender
+ * @param commHandlerSender CommHandler - The CommHandler to execute processMessagesToSend on
+ * @return
+ */
 void * sendBootstrapper(void * commHandlerSender){
     CommHandler * sender = (CommHandler *)commHandlerSender;
     sender->processMessagesToSend();
 }
 
-
+/**
+ * generateHaanradPacket is a helper method that generates a Message object form the passed in HAAN packet represented
+ * as a string
+ * @param haanradCommand String - A HAAN packet represented as a string
+ * @return Message - the Message object representation of the passed in HAAN packet or an Error Message object if parsing
+ * failed
+ */
 Message generateHaanradPacket(string haanradCommand){
 
     Message message;
@@ -92,7 +114,12 @@ Message generateHaanradPacket(string haanradCommand){
 
 }
 
-
+/**
+ * main is the main start execution for the client application of the Haanrad toolsuite
+ * @param argc Int - the number fo arguments passed
+ * @param argv Char * - pointer array representing passed in arguments
+ * @return
+ */
 int main(int argc, char * argv[]) {
 
     string syncDirectory = "./sync";

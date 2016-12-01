@@ -46,6 +46,12 @@ CommHandler::CommHandler(MessageQueue * messageQueue, HCrypto * crypto) {
     }
 }
 
+/**
+ * getInstance enforces the singleton structure of the CommHandler
+ * @param messageQueue MessageQueue - A thread-safe queue storing messages to be passed between the console and haanrad
+ * @param crypto HCrypto - the cryptography object containing functions to encrypt packets and data
+ * @return CommHandler - Either a new instance or the existing instance of the CommHandler
+ */
 CommHandler* CommHandler::getInstance(MessageQueue * messageQueue, HCrypto * crypto) {
     if(CommHandler::instance == nullptr){
         CommHandler::instance = new CommHandler(messageQueue, crypto);
@@ -64,10 +70,20 @@ void CommHandler::killListening() {
     }
 }
 
+/**
+ * killProcessing kills the processing components of the CommHandler. This encompasses all functionality to send
+ * a packet to Haanrad
+ */
 void CommHandler::killProcessing() {
     this->continueProcessing = false;
 }
 
+/**
+ * isOwnPacket is a helper method that determines if the passed in packet is our own. Since libpcap can hear outgoing
+ * requests from the client to Haanrad, this method helps seperate these packets
+ * @param meta PacketMEta - packet information about the packet in question
+ * @return Bool - State as to whether the packet is ours or not. True means it is
+ */
 bool CommHandler::isOwnPacket(PacketMeta *meta) {
 
     struct iphdr * ip = (struct iphdr *)meta->packet;
@@ -85,6 +101,11 @@ bool CommHandler::isOwnPacket(PacketMeta *meta) {
 
 }
 
+/**
+ * getInterface is a helper method that fetches the appropriate "any" interface from libpcap. This is done by fetching
+ * all interfaces and searching through them until the "any" interface is found
+ * @return Bool - State of whether the interface could be found
+ */
 bool CommHandler::getInterface() {
 
     Logger::debug(to_string(getpid()) + " CommHandler:getInterfaces - Initializing");
@@ -124,6 +145,11 @@ bool CommHandler::getInterface() {
     return false;
 }
 
+/**
+ * isValidAuth checks if the passed in packet is destined for one of the libpcap interfaces
+ * @param meta PacketMeta - Meta information about the packet in question
+ * @return Bool - State as to whether the packet is detined for one of the libpcap interfaces or not. True means it is
+ */
 bool CommHandler::isValidAuth(PacketMeta meta) {
 
     //parse out the ip destination address
@@ -329,6 +355,12 @@ void CommHandler::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *pkt_
     }
 }
 
+/**
+ * generateMessageFromCommand takes the passed in HAAN packet as a string and parses it into an appropriate Message object.
+ * This object is used by the console to determine what to print to the user and how to react to future commands
+ * @param haanradPacket String - the HAAN packet as represented as a string, parsed out of the network
+ * @return Message - A Message object representing the HAAN packet or an error Message packet if parsing fails
+ */
 Message CommHandler::generateMessageFromCommand(string haanradPacket) {
 
     Message message;
@@ -362,6 +394,12 @@ Message CommHandler::generateMessageFromCommand(string haanradPacket) {
 
 }
 
+/**
+ * parseOutDNSQuery is a helper method that takes the passed in PacketMeta and assuming it is a DNS packet, sifts through
+ * and parses out the first QUESTION query in the packet. If it is not a DNS query, an empty string is returned
+ * @param meta PacketMeta - An object representing the packet being parsed
+ * @return String - The domain formatted as a dot notation domain string (www.google.com)
+ */
 string CommHandler::parseOutDNSQuery(PacketMeta meta){
 
     if(meta.applicationType != ApplicationType::DNS){
@@ -407,6 +445,11 @@ string CommHandler::parseOutDNSQuery(PacketMeta meta){
     return queryName;
 }
 
+/**
+ * listenForMessages is the main entrance function for listening to events on the network. This method will hang until
+ * a complete command has been received from the network. As part of the setup, listenForMessage will setup and configure
+ * libpcap for listening and call the pcap_loop which will call the static packetCallback function included in the CommHandler
+ */
 void CommHandler::listenForMessages() {
 
 
@@ -445,6 +488,12 @@ void CommHandler::listenForMessages() {
 
 }
 
+/**
+ * sendPacket is the main sendng method for creating and sending packets out the raw socket to Haanrad. The payload
+ * contains an appropriatly sized chunk of the HAAN packet for fitting into a TLS packet. The packet is simply constructed
+ * and then sent from this function
+ * @param payload String - the chunk of the HAAN packet being sent as a TLS packet
+ */
 void CommHandler::sendPacket(string payload) {
 
     char datagram[IP_MAXPACKET];
@@ -536,6 +585,12 @@ void CommHandler::sendPacket(string payload) {
 
 }
 
+/**
+ * processMessagesToSend is the main entrance method to sending packets with the CommHAndler. processMessagesToSend
+ * queries the MessageQueue for new entries and then prepares them to send. This involves parsing the Message objects
+ * into HAAN packets, and then cutting the HAAN packet into appropriate chunks for sending in TLS packets. This method
+ * will hang continualy until the continueProcessing variable is set to false
+ */
 void CommHandler::processMessagesToSend() {
 
     while(this->continueProcessing){
@@ -576,6 +631,13 @@ void CommHandler::processMessagesToSend() {
     }
 }
 
+/**
+ * parseApplicationContent is a helper method that parses out HAAN packet payload information based on the protocol used
+ * and specified in the packet meta. All packets sent to this method are assumed to store their HAAN payloads in the
+ * applicationLayer.
+ * @param meta PacketMeta - An object representation of the packet being parsed for its application layer content
+ * @param applicationLayer Char * - A pointer to the application layer in the PacketMeta object
+ */
 void CommHandler::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
 
     if(isOwnPacket(meta)){
@@ -620,6 +682,12 @@ void CommHandler::parseApplicationContent(PacketMeta * meta, char * applicationL
 
 }
 
+/**
+ * parseTransportContent is a helper method that parses out the HAAN packet payload from the transport layer based
+ * packets supported by Haanrad. This assumes that all packets passed into parseTransportContent store all of their
+ * content on the transport layer
+ * @param meta PacketMeta - An object representation of the packet being parsed for transport layer payload
+ */
 void CommHandler::parseTransportContent(PacketMeta * meta) {
 
     if(isOwnPacket(meta)){
@@ -670,6 +738,12 @@ void CommHandler::parseTransportContent(PacketMeta * meta) {
     }
 }
 
+/**
+ * isFullCommand is a helper function that determines if the command buffer currently contains the contents of a full
+ * HAAN packet. A full HAAN packet can then be parsed into a Message object and sent to the console to be presented
+ * to the user. isFullCommand also includes checks to clear the buffer if it contains garbage or an invalid packet
+ * @return Bool - the state of whether the buffer contains a complete HAAN packet
+ */
 bool CommHandler::isFullCommand() {
 
     Logger::debug("CommHandler:isFullCommand - Validating Data Retreived So Far");
@@ -729,10 +803,17 @@ bool CommHandler::isFullCommand() {
     return true;
 }
 
+/**
+ * getCommandBuffer is a debug command used by the console to print out the current contents of the buffer
+ * @return String * the buffer where HAAN packet contents are stored as received from the network
+ */
 string* CommHandler::getCommandBuffer() {
     return this->command;
 }
 
+/**
+ * clearCommandBuffer is a debug command used by the console to clear out the current contents of the buffer
+ */
 void CommHandler::clearCommandBuffer() {
     this->command->clear();
 }

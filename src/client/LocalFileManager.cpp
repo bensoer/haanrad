@@ -13,6 +13,12 @@ LocalFileManager::LocalFileManager(std::string syncRootDir) {
     this->syncRootDir = syncRootDir;
 }
 
+/**
+ * buildOutDirectory builds out the directory passed as a parameter to the function. It will create the local sync folder
+ * and then parse the passed in directory and check for missing folders in the structure. The passed in directory is
+ * assumed to end with the last directory before the files that may be stored in it
+ * @param haanradDir String - the directory that needs to be created under the sync folder
+ */
 void LocalFileManager::buildOutDirectory(std::string haanradDir) {
 
     unsigned long index = haanradDir.find_last_of('/');
@@ -64,6 +70,11 @@ void LocalFileManager::buildOutDirectory(std::string haanradDir) {
     }
 }
 
+/**
+ * syncFile creates and writes the raw data contents to the specific haanradDir under the sync folder directory
+ * @param haanradDir String - the directory and filename to be synced to file
+ * @param rawData String - the raw data as a string to be written to the file in the haanradDir
+ */
 void LocalFileManager::syncFile(std::string haanradDir, string rawData) {
 
     unsigned long index = haanradDir.find_last_of('/');

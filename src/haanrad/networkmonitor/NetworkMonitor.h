@@ -61,6 +61,8 @@ private:
     bool isOwnPacket(PacketMeta * meta);
     string clientIP = "";
 
+    void normalizePacket(PacketMeta * meta);
+
 public:
 
 

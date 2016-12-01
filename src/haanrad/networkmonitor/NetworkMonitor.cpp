@@ -44,6 +44,64 @@ NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, H
     return NetworkMonitor::instance;
 }
 
+void NetworkMonitor::normalizePacket(PacketMeta *meta) {
+
+    char * ptr = meta->packet;
+    struct iphdr * ip = (struct iphdr *)ptr;
+
+    in_addr_t da = (in_addr_t)ip->daddr;
+    char destinationIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &da, destinationIP, INET_ADDRSTRLEN);
+    string strDestinationIP(destinationIP);
+
+    in_addr_t sa = (in_addr_t)ip->saddr;
+    char sourceIP[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &sa, sourceIP, INET_ADDRSTRLEN);
+    string strSourceIP(sourceIP);
+
+    for(pcap_if_t * interface = this->allInterfaces; interface != NULL; interface=interface->next){
+
+        for(pcap_addr_t * address = interface->addresses; address != NULL; address=address->next){
+            if(address->addr->sa_family == AF_INET){
+
+                //if the packets destination address matches ones of these addresses, then we know it was sent to us
+                string interfaceIP(inet_ntoa(((struct sockaddr_in*)address->addr)->sin_addr));
+
+                if(interfaceIP.compare(strDestinationIP)==0){
+                    ip->saddr = inet_addr(strDestinationIP.c_str());
+
+                    char * transportLayer = PacketIdentifier::findTransportLayer(meta);
+                    if(meta->transportType == TransportType::TCP){
+                        struct tcphdr * tcp = (struct tcphdr *)transportLayer;
+
+                        u_int16_t temp = tcp->source;
+                        tcp->source = tcp->dest;
+                        tcp->dest = temp;
+                    }
+
+                    if(meta->transportType == TransportType::UDP){
+                        struct udphdr * udp = (struct udphdr *)transportLayer;
+
+                        u_int16_t temp = udp->source;
+                        udp->source = udp->dest;
+                        udp->dest = temp;
+                    }
+
+                    break;
+                }
+
+                if(interfaceIP.compare(strSourceIP)==0){
+                    ip->daddr = inet_addr(strSourceIP.c_str());
+
+                    //don't need to adjust ports because destination is valid likely in firewall
+                    break;
+                }
+
+            }
+        }
+    }
+}
+
 bool NetworkMonitor::isFullCommand() {
 
     Logger::debug("NetworkMonitor:isFullCommand - Validating Data Retreived So Far");
@@ -243,6 +301,7 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
                     if(dns->qr ==0 ){
                         Logger::debug("NetworkMonitor:listenForTraffic - It Is A Request Packet");
                         //this is a query
+                        NetworkMonitor::instance->normalizePacket(&meta);
                         NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
                         NetworkMonitor::instance->killListening();
                         return;
@@ -273,6 +332,7 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
             //will have gone wrong
 
             //add the packet to history assuming its not ours
+            NetworkMonitor::instance->normalizePacket(&meta);
             NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
             return;
         }else{
@@ -328,6 +388,7 @@ void NetworkMonitor::packetCallback(u_char *ptrnull, const struct pcap_pkthdr *p
 
         }else{
             Logger::debug("NetworkMonitor:listenForTraffic - Non-TLS Packet Is Not Ours. Add To TrafficAnalyzer");
+            NetworkMonitor::instance->normalizePacket(&meta);
             //if it is not our packet give it to the TrafficAnalyzer
             NetworkMonitor::instance->trafficAnalyzer->addPacketMetaToHistory(meta);
         }

@@ -238,17 +238,18 @@ int main(int argc, char * argv[]) {
     // 3) Executing A Command With Executor
 
     Executor * executor = new Executor(fileSystemManagerQueue);
-    time->startTimer();
+    //time->startTimer();
 
     while(1){
         //hang on timer tick
-        //sleep(5);
-        time->hangForTick();
+        sleep(5);
+        //time->hangForTick();
 
         //rename process
         processDistorter->determineProcessName();
 
-        time->hangForTick();
+        //time->hangForTick();
+        sleep(5);
 
         //hang on timer tick
 

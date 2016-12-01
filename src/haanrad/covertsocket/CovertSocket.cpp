@@ -83,7 +83,7 @@ void CovertSocket::send(string payload) {
 
         while(currentPayload.length() > 0){
 
-            this->time->hangForTick();
+            //this->time->hangForTick();
 
             PacketMeta meta = this->trafficAnalyzer->getBestPacketToSend();
 

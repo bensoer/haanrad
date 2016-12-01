@@ -11,6 +11,12 @@ NetworkMonitorThread::NetworkMonitorThread(NetworkMonitor *networkMonitor, Execu
     this->executorQueue = executorQueue;
 }
 
+/**
+ * start is the main entrance method that is executed on a seperate thread. This method will hang until the stop command
+ * is called and will cotninualy loop polling the network monitor to listenForTraffic and error check the results. If
+ * there is too many errors, start will terminate Haanrad. On success, start will pass the received message to the
+ * ExecutorQueue to be parsed and checked for its purpose
+ */
 void NetworkMonitorThread::start() {
 
     int startupCount = 0;
@@ -45,6 +51,10 @@ void NetworkMonitorThread::start() {
     }
 }
 
+/**
+ * stop will terminate execution of message parsing from the network by stopping the start method processing. This method
+ * will cause the start method to unhang
+ */
 void NetworkMonitorThread::stop() {
     this->keepRunning = false;
 }

